@@ -3,14 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/*
- * $table->id();
-            $table->foreignId('exam_id')->constrained('exams')->onDelete('cascade');
-            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
-            $table->integer('position')->default(0);
-            $table->timestamps();
- * */
+
 class ExamQuestion extends Model
 {
     protected $fillable = [
@@ -19,12 +14,18 @@ class ExamQuestion extends Model
         'position',
     ];
 
-    public function exam()
+    /**
+     * Get the exam that owns the exam question
+     */
+    public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class);
     }
 
-    public function question()
+    /**
+     * Get the question that owns the exam question
+     */
+    public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);
     }

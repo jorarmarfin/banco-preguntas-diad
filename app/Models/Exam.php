@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
@@ -19,24 +21,43 @@ class Exam extends Model
         'path',
     ];
 
-    // Relationships
-    public function term()
+    /**
+     * Get the term that owns the exam
+     */
+    public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
-    public function subject()
+    /**
+     * Get the subject that owns the exam
+     */
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
-    public function draw()
+    /**
+     * Get the draw that owns the exam
+     */
+    public function draw(): BelongsTo
     {
         return $this->belongsTo(Draw::class);
     }
 
-    public function generator()
+    /**
+     * Get the user who generated the exam
+     */
+    public function generator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'generated_by');
+    }
+
+    /**
+     * Get the exam questions for the exam
+     */
+    public function examQuestions(): HasMany
+    {
+        return $this->hasMany(ExamQuestion::class);
     }
 }

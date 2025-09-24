@@ -12,10 +12,24 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
+                <flux:navlist.group :heading="__('Menu')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
+            @can('menu settings')
+                <flux:navlist.group heading="Sistema" expandable>
+                    <flux:navlist.item
+                        icon="cog-8-tooth"
+                        :href="route('setting.index')"
+                        :current="request()->routeIs('setting.index')"
+                        wire:navigate
+                    >
+                        Configuración
+                    </flux:navlist.item>
+
+
+                </flux:navlist.group>
+            @endcan
 
             <flux:spacer />
 

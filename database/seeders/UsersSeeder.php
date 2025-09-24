@@ -21,35 +21,16 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('41887192')
         ])->assignRole('sudo');
         User::Create([
-            'name'=>'Vannya Cristobal',
-            'email'=>'vannya@gmail.com',
+            'name'=>'Jesus Zapana',
+            'email'=>'jzapana@gmail.com',
             'password' => Hash::make('123456789')
-        ])->assignRole('Secretary');
+        ])->assignRole('System');
         User::Create([
-            'name'=>'Carlos Ponce',
-            'email'=>'carlos@gmail.com',
+            'name'=>'Mario Garayar',
+            'email'=>'mgarayar@gmail.com',
             'password' => Hash::make('123456789')
-        ])->assignRole('Administrator');
-        User::Create([
-            'name'=>'Amparito Huaman',
-            'email'=>'amparito@gmail.com',
-            'password' => Hash::make('123456789')
-        ])->assignRole('Secretary');
-        User::Create([
-            'name'=>'Azucena Calderon',
-            'email'=>'azucena@gmail.com',
-            'password' => Hash::make('123456789')
-        ])->assignRole('Secretary');
-        User::Create([
-            'name'=>'Teacher',
-            'email'=>'teacher@gmail.com',
-            'password' => Hash::make('123456789')
-        ])->assignRole('Teacher');
-        User::Create([
-            'name'=>'Student',
-            'email'=>'student@gmail.com',
-            'password' => Hash::make('123456789')
-        ])->assignRole('Student');
+        ])->assignRole('deputy');
+
 
 
 

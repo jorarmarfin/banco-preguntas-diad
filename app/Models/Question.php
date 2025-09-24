@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Question extends Model
 {
@@ -11,7 +13,6 @@ class Question extends Model
         'subject_id',
         'chapter_id',
         'topic_id',
-        'question_category_id',
         'term_id',
         'difficulty',
         'points',
@@ -24,34 +25,59 @@ class Question extends Model
         'comments',
     ];
 
-    public function subject()
+    /**
+     * Get the subject that owns the question
+     */
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
-    public function chapter()
+    /**
+     * Get the chapter that owns the question
+     */
+    public function chapter(): BelongsTo
     {
         return $this->belongsTo(Chapter::class);
     }
 
-    public function topic()
+    /**
+     * Get the topic that owns the question
+     */
+    public function topic(): BelongsTo
     {
         return $this->belongsTo(Topic::class);
     }
 
-    public function questionCategory()
-    {
-        return $this->belongsTo(QuestionCategory::class);
-    }
-
-    public function term()
+    /**
+     * Get the term that owns the question
+     */
+    public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
-    public function reviewer()
+    /**
+     * Get the user who reviewed this question
+     */
+    public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    /**
+     * Get the exam questions for this question
+     */
+    public function examQuestions(): HasMany
+    {
+        return $this->hasMany(ExamQuestion::class);
+    }
+
+    /**
+     * Get the draw questions for this question
+     */
+    public function drawQuestions(): HasMany
+    {
+        return $this->hasMany(DrawQuestion::class);
+    }
 }

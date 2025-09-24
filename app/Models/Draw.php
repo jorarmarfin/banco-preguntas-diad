@@ -3,20 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/*
- *  $table->id();
-            $table->string('code')->unique();
-            $table->foreignId('term_id')->constrained('terms');
-            $table->foreignId('subject_id')->constrained('subjects');
-            $table->foreignId('chapter_id')->nullable()->constrained('chapters');
-            $table->foreignId('topic_id')->nullable()->constrained('topics');
-            $table->string('state'); // ['pending', 'completed', 'canceled']// Consider using enum if supported
-            $table->foreignId('created_by')->constrained('users');
-            $table->string('path')->nullable();
 
-            $table->timestamps();
- * */
 class Draw extends Model
 {
     protected $fillable = [
@@ -30,28 +20,59 @@ class Draw extends Model
         'path',
     ];
 
-    public function term()
+    /**
+     * Get the term that owns the draw
+     */
+    public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
-    public function subject()
+    /**
+     * Get the subject that owns the draw
+     */
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
-    public function chapter()
+    /**
+     * Get the chapter that owns the draw
+     */
+    public function chapter(): BelongsTo
     {
         return $this->belongsTo(Chapter::class);
     }
 
-    public function topic()
+    /**
+     * Get the topic that owns the draw
+     */
+    public function topic(): BelongsTo
     {
         return $this->belongsTo(Topic::class);
     }
 
-    public function creator()
+    /**
+     * Get the user who created the draw
+     */
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the draw questions for the draw
+     */
+    public function drawQuestions(): HasMany
+    {
+        return $this->hasMany(DrawQuestion::class);
+    }
+
+    /**
+     * Get the exams for the draw
+     */
+    public function exams(): HasMany
+    {
+        return $this->hasMany(Exam::class);
     }
 }
