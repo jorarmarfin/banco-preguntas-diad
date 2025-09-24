@@ -30,7 +30,7 @@
                 </flux:navlist.group>
             @endcan
             @can('menu subject categories')
-                <flux:navlist.group heading="Asignaturas" expandable>
+                <flux:navlist.group heading="Menu Asignaturas" expandable>
                     <flux:navlist.item
                         icon="tag"
                         :href="route('subject.categories.index')"
@@ -38,6 +38,14 @@
                         wire:navigate
                     >
                         Categorías
+                    </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="book-open"
+                        :href="route('subject.index')"
+                        :current="request()->routeIs('subject.index')"
+                        wire:navigate
+                    >
+                        Asignaturas
                     </flux:navlist.item>
 
                 </flux:navlist.group>

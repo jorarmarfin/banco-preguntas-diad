@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Subject extends Model
 {
     protected $fillable = ['code', 'name', 'subject_category_id'];
+    public $timestamps = false;
 
     /**
      * Get the category that owns the subject
