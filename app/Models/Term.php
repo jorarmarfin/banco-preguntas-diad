@@ -20,6 +20,24 @@ class Term extends Model
     }
 
     /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When saving a term, ensure only one can be active
+        static::saving(function ($term) {
+            if ($term->is_active) {
+                // Deactivate all other terms
+                static::where('id', '!=', $term->id ?? 0)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+        });
+    }
+
+    /**
      * Get the questions for the term
      */
     public function questions(): HasMany

@@ -22,6 +22,11 @@ trait TermTrait
      */
     public function createTerm(array $data): Term
     {
+        // If setting this term as active, deactivate all others
+        if ($data['is_active'] ?? false) {
+            Term::where('is_active', true)->update(['is_active' => false]);
+        }
+
         return Term::create([
             'code' => $data['code'],
             'name' => $data['name'],
@@ -34,6 +39,13 @@ trait TermTrait
      */
     public function updateTerm(Term $term, array $data): bool
     {
+        // If setting this term as active, deactivate all others
+        if ($data['is_active'] ?? false) {
+            Term::where('id', '!=', $term->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+        }
+
         return $term->update([
             'code' => $data['code'],
             'name' => $data['name'],

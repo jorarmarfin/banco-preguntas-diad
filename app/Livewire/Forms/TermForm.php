@@ -42,6 +42,11 @@ class TermForm extends Form
             return false;
         }
 
+        // If setting this term as active, deactivate all others first
+        if ($this->is_active) {
+            Term::where('is_active', true)->update(['is_active' => false]);
+        }
+
         Term::create([
             'code' => $this->code,
             'name' => $this->name,
@@ -74,6 +79,13 @@ class TermForm extends Form
         if ($nameExists) {
             $this->addError('name', 'Este nombre ya existe.');
             return false;
+        }
+
+        // If setting this term as active, deactivate all others first
+        if ($this->is_active) {
+            Term::where('id', '!=', $this->term->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
         }
 
         $this->term->update([
