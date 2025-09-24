@@ -1,6 +1,6 @@
 <x-layouts.app title="Asignaturas">
     <h1 class="title-page">
-        <flux:icon.tag />
+        <flux:icon.book-open />
         Asignaturas
     </h1>
     <hr class="my-4">

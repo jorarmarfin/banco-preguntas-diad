@@ -126,3 +126,4 @@ table td {
 .toggle-checkbox:checked + .toggle-label {
     @apply bg-green-400;
 }
+
