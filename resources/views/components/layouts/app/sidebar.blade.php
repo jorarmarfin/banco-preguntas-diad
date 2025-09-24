@@ -26,6 +26,14 @@
                     >
                         Configuración
                     </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="arrow-path-rounded-square"
+                        :href="route('term.index')"
+                        :current="request()->routeIs('term.index')"
+                        wire:navigate
+                    >
+                        Periodo
+                    </flux:navlist.item>
 
                 </flux:navlist.group>
             @endcan
