@@ -27,6 +27,18 @@
                         Configuración
                     </flux:navlist.item>
 
+                </flux:navlist.group>
+            @endcan
+            @can('menu subject categories')
+                <flux:navlist.group heading="Asignaturas" expandable>
+                    <flux:navlist.item
+                        icon="tag"
+                        :href="route('subject.categories.index')"
+                        :current="request()->routeIs('subject.categories.index')"
+                        wire:navigate
+                    >
+                        Categorías
+                    </flux:navlist.item>
 
                 </flux:navlist.group>
             @endcan

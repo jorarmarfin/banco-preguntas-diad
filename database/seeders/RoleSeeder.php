@@ -22,6 +22,20 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'menu system'])->syncRoles([$sy]);
         Permission::create(['name' => 'menu deputy'])->syncRoles([$sy,$de]);
         Permission::create(['name' => 'menu teacher'])->syncRoles([$sy,$te]);
+        Permission::create(['name' => 'menu exams'])->syncRoles([$sy,$de,$te]);
+        Permission::create(['name' => 'menu questions'])->syncRoles([$sy,$de,$te]);
+        Permission::create(['name' => 'menu settings'])->syncRoles([$sy]);
+        Permission::create(['name' => 'menu users'])->syncRoles([$sy]);
+        Permission::create(['name' => 'menu roles'])->syncRoles([$sy]);
+        Permission::create(['name' => 'menu permissions'])->syncRoles([$sy]);
+        Permission::create(['name' => 'menu draws'])->syncRoles([$sy,$de,$te]);
+        Permission::create(['name' => 'menu terms'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu chapters'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu topics'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu question categories'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu question types'])->syncRoles([$sy ,$de]);
+        Permission::create(['name' => 'menu subject categories'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu subjects'])->syncRoles([$sy,$de]);
 
         Permission::create(['name' => 'manage Subject categories'])->syncRoles([$sy]);
         Permission::create(['name' => 'manage Subjects'])->syncRoles([$sy]);

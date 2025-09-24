@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,
             TermSeeder::class,
             SettingSeeder::class,
+            SubjectCategoriesSeeder::class
         ]);
     }
 }
