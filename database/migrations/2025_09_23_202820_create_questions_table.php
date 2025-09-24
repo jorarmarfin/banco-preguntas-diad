@@ -14,17 +14,15 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->string('code');
-            $table->foreignId('subject_id')->constrained('subjects');
-            $table->foreignId('chapter_id')->nullable()->constrained('chapters');
-            $table->foreignId('topic_id')->nullable()->constrained('topics');
-            $table->foreignId('question_category_id')->constrained('question_categories');
-            $table->foreignId('term_id')->nullable()->constrained('terms');
+            $table->foreignId('subject_id')->nullable()->constrained('subjects');
+            $table->foreignId('chapter_id')->nullable()->nullable()->constrained('chapters');
+            $table->foreignId('topic_id')->nullable()->nullable()->constrained('topics');
+            $table->foreignId('term_id')->nullable()->nullable()->constrained('terms');
             $table->string('difficulty');// ['easy', 'medium', 'hard']
             $table->text('latex_body');
             $table->text('latex_solution')->nullable();
             $table->string('status');// ['draft', 'approved', 'archived']
-            //quien reviso, cuabndo reviso, tiempo estimado,
-            $table->foreignId('reviewed_by')->nullable()->constrained('users');
+            $table->foreignId('reviewed_by')->nullable()->nullable()->constrained('users');
             $table->string('reviewed_at')->nullable();
             $table->integer('estimated_time')->nullable(); // in seconds
             $table->text('comments')->nullable();

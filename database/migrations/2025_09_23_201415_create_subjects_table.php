@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('name');
-            $table->foreignId('subject_category_id')->constrained()->nullOnDelete();
+            $table->foreignId('subject_category_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

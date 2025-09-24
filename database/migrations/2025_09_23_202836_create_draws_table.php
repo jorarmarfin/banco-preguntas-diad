@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('draws', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->foreignId('term_id')->constrained('terms');
-            $table->foreignId('subject_id')->constrained('subjects');
-            $table->foreignId('chapter_id')->nullable()->constrained('chapters');
-            $table->foreignId('topic_id')->nullable()->constrained('topics');
+            $table->foreignId('term_id')->nullable()->constrained('terms');
+            $table->foreignId('subject_id')->nullable()->constrained('subjects');
+            $table->foreignId('chapter_id')->nullable()->nullable()->constrained('chapters');
+            $table->foreignId('topic_id')->nullable()->nullable()->constrained('topics');
             $table->string('state'); // ['pending', 'completed', 'canceled']// Consider using enum if supported
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->nullable()->constrained('users');
             $table->string('path')->nullable();
 
             $table->timestamps();

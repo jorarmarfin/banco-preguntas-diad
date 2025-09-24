@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('name');
-            $table->foreignId('subject_id')->constrained()->nullOnDelete();
+            $table->foreignId('subject_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('order')->default(0);
         });
     }
