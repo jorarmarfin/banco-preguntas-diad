@@ -68,26 +68,20 @@
                                 <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2">
                                     Estado
                                 </label>
-                                <div class="flex items-center space-x-4">
-                                    <label class="flex items-center">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-500 mr-3">Inactivo</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
                                         <input
-                                            type="radio"
+                                            type="checkbox"
                                             wire:model="form.is_active"
-                                            value="1"
-                                            class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                                        <span class="ml-2 text-sm text-gray-700">Activo</span>
+                                            class="sr-only peer"
+                                            @if($form->is_active) checked @endif>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                     </label>
-                                    <label class="flex items-center">
-                                        <input
-                                            type="radio"
-                                            wire:model="form.is_active"
-                                            value="0"
-                                            class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                                        <span class="ml-2 text-sm text-gray-700">Inactivo</span>
-                                    </label>
+                                    <span class="text-sm text-gray-500 ml-3">Activo</span>
                                 </div>
                                 @error('form.is_active')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>

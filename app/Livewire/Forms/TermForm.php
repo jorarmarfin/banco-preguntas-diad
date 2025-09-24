@@ -16,7 +16,6 @@ class TermForm extends Form
     #[Validate('required|string|max:255')]
     public $name = '';
 
-    #[Validate('boolean')]
     public $is_active = true;
 
     public function setTerm(Term $term)
@@ -24,7 +23,7 @@ class TermForm extends Form
         $this->term = $term;
         $this->code = $term->code;
         $this->name = $term->name;
-        $this->is_active = $term->is_active;
+        $this->is_active = (bool) $term->is_active;
     }
 
     public function store()
@@ -43,7 +42,11 @@ class TermForm extends Form
             return false;
         }
 
-        Term::create($this->only(['code', 'name', 'is_active']));
+        Term::create([
+            'code' => $this->code,
+            'name' => $this->name,
+            'is_active' => (bool) $this->is_active
+        ]);
 
         $this->reset();
         return true;
@@ -73,7 +76,11 @@ class TermForm extends Form
             return false;
         }
 
-        $this->term->update($this->only(['code', 'name', 'is_active']));
+        $this->term->update([
+            'code' => $this->code,
+            'name' => $this->name,
+            'is_active' => (bool) $this->is_active
+        ]);
 
         $this->reset();
         return true;
