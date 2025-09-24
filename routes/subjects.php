@@ -10,5 +10,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subject-chapters/{id}', [\App\Http\Controllers\SubjectChaptersController::class,'index'])
         ->name('subject.chapters.index');
 
+    Route::get('/subject-topics/{id}', [\App\Http\Controllers\SubjectTopicsController::class,'index'])
+        ->name('subject.topics.index');
+
+    Route::get('/subject-questions/{id}', [\App\Http\Controllers\SubjectQuestionController::class,'index'])
+        ->name('subject.questions.index');
+
 });
 

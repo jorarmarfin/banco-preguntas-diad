@@ -1,9 +1,9 @@
-<x-layouts.app title="Categorías de asignaturas">
+<x-layouts.app title="Capítulos de Asignatura">
     <h1 class="title-page">
-        <flux:icon.tag />
-        Categorías de asignaturas
+        <flux:icon.book-open />
+        Capítulos de Asignatura
     </h1>
     <hr class="my-4">
-    <livewire:subject-chapters-live>
+    <livewire:subject-chapters-live :subject_id="$subject_id">
 
 </x-layouts.app>
