@@ -8,6 +8,6 @@ class SubjectQuestionController extends Controller
 {
     public function index($id)
     {
-        return view('subjects_questions.index', compact('id'));
+        return view('subject_questions.index', ['topic_id' => $id]);
     }
 }

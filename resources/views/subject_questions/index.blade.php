@@ -1,9 +1,9 @@
-<x-layouts.app title="Preguntas">
+<x-layouts.app title="Preguntas de Tema">
     <h1 class="title-page">
-        <flux:icon.variable />
-        Preguntas
+        <flux:icon.question-mark-circle />
+        Preguntas de Tema
     </h1>
     <hr class="my-4">
-    <livewire:subject-topics-live :topic_id="$topic_id">
+    <livewire:subject-questions-live :topic_id="$topic_id">
 
 </x-layouts.app>

@@ -2,12 +2,234 @@
 
 namespace App\Livewire;
 
+use App\Models\Question;
+use App\Models\Topic;
+use App\Traits\SubjectQuestionsTrait;
+use App\Traits\DdlTrait;
+use App\Traits\ActiveTermTrait;
+use App\Livewire\Forms\QuestionForm;
+use App\Enums\QuestionStatus;
 use Livewire\Component;
+use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Str;
 
 class SubjectQuestionsLive extends Component
 {
+    use WithPagination, WithFileUploads, SubjectQuestionsTrait, DdlTrait, ActiveTermTrait;
+
+    public QuestionForm $form;
+    public $topic;
+    public $topicId;
+    public $uploadedFiles = [];
+
+    // Control properties
+    public $isCreate = false;
+    public $isEdit = false;
+
+    public function mount($topic_id)
+    {
+        $this->topicId = $topic_id;
+        $this->topic = $this->getTopicById($topic_id);
+
+        if (!$this->topic) {
+            abort(404, 'Tema no encontrado');
+        }
+
+        // Pre-cargar datos relacionados
+        $this->form->topic_id = $topic_id;
+        $this->form->chapter_id = $this->topic->chapter_id;
+        $this->form->subject_id = $this->topic->chapter->subject_id;
+
+        // Asignar período activo automáticamente
+        $activeTermId = $this->getActiveTermId();
+        if (!$activeTermId) {
+            session()->flash('error', 'No hay un período activo configurado.');
+        }
+        $this->form->term_id = $activeTermId;
+    }
+
+    public function showCreateForm()
+    {
+        $this->form->reset();
+        $this->uploadedFiles = [];
+        $this->form->topic_id = $this->topicId;
+        $this->form->chapter_id = $this->topic->chapter_id;
+        $this->form->subject_id = $this->topic->chapter->subject_id;
+        $this->form->term_id = $this->getActiveTermId();
+        $this->form->code = $this->getNextQuestionCode($this->topicId);
+        $this->isEdit = false;
+        $this->isCreate = true;
+    }
+
+    public function hideCreateForm()
+    {
+        $this->form->reset();
+        $this->uploadedFiles = [];
+        $this->form->topic_id = $this->topicId;
+        $this->form->chapter_id = $this->topic->chapter_id;
+        $this->form->subject_id = $this->topic->chapter->subject_id;
+        $this->form->term_id = $this->getActiveTermId();
+        $this->isCreate = false;
+        $this->isEdit = false;
+    }
+
+    public function store()
+    {
+        // Verificar que hay un período activo
+        if (!$this->hasActiveTerm()) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay un período activo configurado.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        if ($this->form->store()) {
+            // Obtener la pregunta recién creada
+            $question = Question::latest()->first();
+
+            // Procesar archivos subidos
+            if (!empty($this->uploadedFiles)) {
+                $this->processUploadedFiles($question);
+            }
+
+            $this->isCreate = false;
+            $this->uploadedFiles = [];
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Éxito!',
+                'text' => 'Pregunta creada correctamente.',
+                'icon' => 'success'
+            ]);
+        }
+    }
+
+    public function edit(Question $question)
+    {
+        $this->uploadedFiles = [];
+        $this->form->setQuestion($question);
+        $this->isEdit = true;
+        $this->isCreate = true; // Para mostrar el formulario
+    }
+
+    public function update()
+    {
+        if ($this->form->update()) {
+            // Procesar archivos subidos si hay alguno
+            if (!empty($this->uploadedFiles)) {
+                $this->processUploadedFiles($this->form->question);
+            }
+
+            $this->hideCreateForm();
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Éxito!',
+                'text' => 'Pregunta actualizada correctamente.',
+                'icon' => 'success'
+            ]);
+        }
+    }
+
+    public function delete($questionId)
+    {
+        try {
+            $question = $this->findQuestion($questionId);
+
+            if (!$question) {
+                $this->dispatch('swal:error', [
+                    'title' => 'Error',
+                    'text' => 'Pregunta no encontrada.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            // Verificar si la pregunta tiene relaciones
+            if ($this->questionHasRelations($question)) {
+                $this->dispatch('swal:error', [
+                    'title' => 'No se puede eliminar',
+                    'text' => 'Esta pregunta está asociada a exámenes o sorteos.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            $this->deleteQuestion($question);
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Éxito!',
+                'text' => 'Pregunta eliminada correctamente.',
+                'icon' => 'success'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No se pudo eliminar la pregunta.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function confirmDelete($questionId)
+    {
+        $this->dispatch('swal:confirm', [
+            'title' => '¿Estás seguro?',
+            'text' => 'Esta acción no se puede deshacer.',
+            'icon' => 'warning',
+            'confirmButtonText' => 'Sí, eliminar',
+            'cancelButtonText' => 'Cancelar',
+            'method' => 'delete',
+            'params' => $questionId
+        ]);
+    }
+
+    public function removeUploadedFile($index)
+    {
+        unset($this->uploadedFiles[$index]);
+        $this->uploadedFiles = array_values($this->uploadedFiles);
+    }
+
+    private function processUploadedFiles(Question $question)
+    {
+        if (empty($this->uploadedFiles)) return;
+
+        $activeTerm = $this->getActiveTerm();
+        $subjectName = $this->topic->chapter->subject->name;
+
+        $uploadedPaths = [];
+
+        foreach ($this->uploadedFiles as $file) {
+            $originalName = $file->getClientOriginalName();
+            $filePath = $this->generateQuestionFilePath(
+                $question->id,
+                $activeTerm->name,
+                $subjectName,
+                $originalName
+            );
+
+            // Guardar archivo en storage público
+            $file->storeAs('public/' . dirname($filePath), basename($filePath));
+            $uploadedPaths[] = $filePath;
+        }
+
+        // Actualizar el path de la pregunta (guardamos solo el primer archivo o concatenamos)
+        $question->update([
+            'path' => $uploadedPaths[0] ?? null
+        ]);
+    }
+
     public function render()
     {
-        return view('livewire.subject-questions-live');
+        $activeTerm = $this->getActiveTerm();
+
+        return view('livewire.subject-questions-live', [
+            'questions' => $this->getQuestionsPaginated($this->topicId, 50),
+            'difficultyOptions' => $this->DdlDifficultyOptions(),
+            'statusOptions' => QuestionStatus::options(),
+            'activeTerm' => $activeTerm
+        ]);
     }
 }
