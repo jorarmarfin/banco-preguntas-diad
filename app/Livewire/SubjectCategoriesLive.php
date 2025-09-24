@@ -18,7 +18,7 @@ class SubjectCategoriesLive extends Component
     public $isCreate = false;
     public $isEdit = false;
 
-    protected $paginationTheme = 'bootstrap';
+    // Quitamos el paginationTheme para que use el por defecto de Tailwind
 
     public function showCreateForm()
     {

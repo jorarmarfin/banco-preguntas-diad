@@ -4,13 +4,14 @@ namespace App\Livewire;
 
 use App\Models\Subject;
 use App\Traits\SubjectTrait;
+use App\Traits\DdlTrait;
 use App\Livewire\Forms\SubjectForm;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class SubjectLive extends Component
 {
-    use WithPagination, SubjectTrait;
+    use WithPagination, SubjectTrait, DdlTrait;
 
     public SubjectForm $form;
 
@@ -18,7 +19,7 @@ class SubjectLive extends Component
     public $isCreate = false;
     public $isEdit = false;
 
-    protected $paginationTheme = 'bootstrap';
+    // Quitamos el paginationTheme para que use el por defecto de Tailwind
 
     public function showCreateForm()
     {
@@ -128,12 +129,9 @@ class SubjectLive extends Component
 
     public function render()
     {
-        $subjects = $this->getSubjectsPaginated(10);
-        $categories = $this->getAllSubjectCategories();
-
         return view('livewire.subject-live', [
-            'subjects' => $subjects,
-            'categories' => $categories
+            'subjects' => $this->getSubjectsPaginated(10),
+            'categories' => $this->DdlSubjectCategories()
         ]);
     }
 }

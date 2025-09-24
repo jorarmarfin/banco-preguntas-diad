@@ -193,7 +193,7 @@
 
     <!-- Paginación -->
     <div class="flex justify-center mt-6">
-        {{ $subjects->links() }}
+        {{ $subjects->links('pagination::custom') }}
     </div>
 </div>
 

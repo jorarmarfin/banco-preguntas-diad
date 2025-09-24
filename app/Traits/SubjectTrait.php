@@ -3,9 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Subject;
-use App\Models\SubjectCategories;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
 trait SubjectTrait
 {
@@ -86,13 +84,5 @@ trait SubjectTrait
         }
 
         return $query->exists();
-    }
-
-    /**
-     * Get all subject categories for dropdown
-     */
-    public function getAllSubjectCategories(): Collection
-    {
-        return SubjectCategories::orderBy('name')->get();
     }
 }
