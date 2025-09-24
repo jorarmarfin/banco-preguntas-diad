@@ -130,7 +130,7 @@ class SubjectLive extends Component
     public function render()
     {
         return view('livewire.subject-live', [
-            'subjects' => $this->getSubjectsPaginated(10),
+            'subjects' => $this->getSubjectsPaginated(50),
             'categories' => $this->DdlSubjectCategories()
         ]);
     }

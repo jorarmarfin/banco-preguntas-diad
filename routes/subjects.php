@@ -7,5 +7,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subject', [\App\Http\Controllers\SubjectController::class,'index'])
         ->name('subject.index');
 
+    Route::get('/subject-chapters/{id}', [\App\Http\Controllers\SubjectChaptersController::class,'index'])
+        ->name('subject.chapters.index');
+
 });
 
