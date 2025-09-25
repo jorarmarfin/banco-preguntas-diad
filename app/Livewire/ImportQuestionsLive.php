@@ -32,7 +32,11 @@ class ImportQuestionsLive extends Component
     {
         // Validar que hay un banco activo antes de proceder
         if (!$this->hasActiveBank) {
-            session()->flash('error', 'No hay un banco activo para realizar la importación.');
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'title' => 'Error',
+                'message' => 'No hay un banco activo para realizar la importación.'
+            ]);
             return;
         }
 
@@ -58,16 +62,20 @@ class ImportQuestionsLive extends Component
 
                 if ($errorCount > 0) {
                     // Importación parcialmente exitosa
-                    session()->flash('warning',
-                        "Se importaron {$imported} preguntas correctamente, pero hubo {$errorCount} errores. " .
-                        "Errores: " . implode('; ', array_slice($result['errors'], 0, 3)) .
-                        ($errorCount > 3 ? "... y " . ($errorCount - 3) . " más." : "")
-                    );
+                    $this->dispatch('show-alert', [
+                        'type' => 'warning',
+                        'title' => 'Importación Parcial',
+                        'message' => "Se importaron {$imported} preguntas correctamente, pero hubo {$errorCount} errores.",
+                        'details' => implode('<br>', array_slice($result['errors'], 0, 5)) .
+                                   ($errorCount > 5 ? "<br>... y " . ($errorCount - 5) . " errores más." : "")
+                    ]);
                 } else {
                     // Importación completamente exitosa
-                    session()->flash('success',
-                        "¡Importación completada! Se importaron {$imported} preguntas exitosamente."
-                    );
+                    $this->dispatch('show-alert', [
+                        'type' => 'success',
+                        'title' => '¡Éxito!',
+                        'message' => "Se importaron {$imported} preguntas exitosamente."
+                    ]);
                 }
 
                 // Limpiar el formulario después de una importación exitosa
@@ -75,15 +83,19 @@ class ImportQuestionsLive extends Component
 
             } else {
                 // Error general en la importación
-                session()->flash('error',
-                    'Error en la importación: ' . $result['message']
-                );
+                $this->dispatch('show-alert', [
+                    'type' => 'error',
+                    'title' => 'Error en la importación',
+                    'message' => $result['message'] ?? 'Error desconocido durante la importación.'
+                ]);
             }
 
         } catch (\Exception $e) {
-            session()->flash('error',
-                'Error inesperado durante la importación: ' . $e->getMessage()
-            );
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'title' => 'Error inesperado',
+                'message' => 'Error durante la importación: ' . $e->getMessage()
+            ]);
         } finally {
             $this->isImporting = false;
         }

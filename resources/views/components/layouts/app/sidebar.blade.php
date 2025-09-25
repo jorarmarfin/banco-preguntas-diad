@@ -87,8 +87,8 @@
                 <flux:navlist.group heading="Sortear" expandable>
                     <flux:navlist.item
                         icon="bookmark-square"
-                        :href="route('subject.categories.index')"
-                        :current="request()->routeIs('subject.categories.index')"
+                        :href="route('exams.index')"
+                        :current="request()->routeIs('exams.index')"
                         wire:navigate
                     >
                         Exámenes

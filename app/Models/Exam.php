@@ -10,19 +10,13 @@ class Exam extends Model
 {
     protected $fillable = [
         'code',
-        'term_id',
-        'subject_id',
         'name',
-        'draw_id',
-        'version',
-        'generated_by',
-        'generated_at',
-        'status',
+        'term_id',
         'path',
     ];
 
     /**
-     * Get the term that owns the exam
+     * Get the term that owns the exam.
      */
     public function term(): BelongsTo
     {
@@ -30,34 +24,11 @@ class Exam extends Model
     }
 
     /**
-     * Get the subject that owns the exam
+     * Get the questions for the exam.
      */
-    public function subject(): BelongsTo
-    {
-        return $this->belongsTo(Subject::class);
-    }
-
-    /**
-     * Get the draw that owns the exam
-     */
-    public function draw(): BelongsTo
-    {
-        return $this->belongsTo(Draw::class);
-    }
-
-    /**
-     * Get the user who generated the exam
-     */
-    public function generator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'generated_by');
-    }
-
-    /**
-     * Get the exam questions for the exam
-     */
-    public function examQuestions(): HasMany
+    public function questions(): HasMany
     {
         return $this->hasMany(ExamQuestion::class);
     }
+
 }
