@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('topic_id')->nullable()->nullable()->constrained('topics');
             $table->foreignId('term_id')->nullable()->nullable()->constrained('terms');
             $table->string('difficulty');// ['easy', 'medium', 'hard']
-            $table->text('latex_body');
+            $table->text('latex_body')->nullable();
             $table->text('latex_solution')->nullable();
             $table->string('status');// ['draft', 'approved', 'archived']
             $table->foreignId('reviewed_by')->nullable()->nullable()->constrained('users');

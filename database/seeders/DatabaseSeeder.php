@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             SubjectCategoriesSeeder::class,
             SubjectSeeder::class,
+            ChapterSeeder::class,
+            TopicSeeder::class,
         ]);
     }
 }
