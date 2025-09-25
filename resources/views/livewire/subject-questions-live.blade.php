@@ -149,7 +149,34 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Archivos de la Pregunta
                             </label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-400 transition-colors">
+
+                            <!-- Zona de drag and drop mejorada -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-400 transition-colors"
+                                 x-data="{
+                                     isDragging: false,
+                                     handleDragOver(e) {
+                                         e.preventDefault();
+                                         this.isDragging = true;
+                                     },
+                                     handleDragLeave(e) {
+                                         e.preventDefault();
+                                         this.isDragging = false;
+                                     },
+                                     handleDrop(e) {
+                                         e.preventDefault();
+                                         this.isDragging = false;
+                                         const files = e.dataTransfer.files;
+                                         if (files.length > 0) {
+                                             document.getElementById('file-upload').files = files;
+                                             document.getElementById('file-upload').dispatchEvent(new Event('change'));
+                                         }
+                                     }
+                                 }"
+                                 :class="{ 'border-orange-400 bg-orange-50': isDragging }"
+                                 @dragover="handleDragOver"
+                                 @dragleave="handleDragLeave"
+                                 @drop="handleDrop">
+
                                 <div class="text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -157,7 +184,7 @@
                                     <div class="mt-4">
                                         <label for="file-upload" class="cursor-pointer">
                                             <span class="mt-2 block text-sm font-medium text-gray-900">
-                                                Subir archivos de pregunta
+                                                Arrastra archivos aquí o haz clic para seleccionar
                                             </span>
                                             <input
                                                 id="file-upload"
@@ -174,29 +201,67 @@
                                     </div>
                                 </div>
 
-                                <!-- Preview de archivos -->
-                                @if(!empty($uploadedFiles))
-                                    <div class="mt-4 space-y-2">
-                                        <h4 class="text-sm font-medium text-gray-700">Archivos seleccionados:</h4>
-                                        @foreach($uploadedFiles as $index => $file)
-                                            <div class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">
-                                                <div class="flex items-center">
-                                                    <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    <span class="text-sm text-gray-700">{{ $file->getClientOriginalName() }}</span>
-                                                    <span class="text-xs text-gray-500 ml-2">({{ number_format($file->getSize() / 1024, 1) }} KB)</span>
+                                <!-- Archivos existentes -->
+                                @if(!empty($existingFiles))
+                                    <div class="mt-4 border-t border-gray-200 pt-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Archivos actuales:</h4>
+                                        <div class="space-y-2">
+                                            @foreach($existingFiles as $file)
+                                                <div class="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-md">
+                                                    <div class="flex items-center">
+                                                        <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        <span class="text-sm text-gray-700">{{ $file['name'] }}</span>
+                                                        <span class="text-xs text-gray-500 ml-2">({{ number_format($file['size'] / 1024, 1) }} KB)</span>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <a href="{{ $file['url'] }}" target="_blank"
+                                                           class="text-blue-600 hover:text-blue-800">
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                            </svg>
+                                                        </a>
+                                                        <button
+                                                            type="button"
+                                                            wire:click="deleteExistingFile('{{ $file['path'] }}')"
+                                                            class="text-red-600 hover:text-red-800">
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    wire:click="removeUploadedFile({{ $index }})"
-                                                    class="text-red-600 hover:text-red-800">
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Preview de archivos nuevos -->
+                                @if(!empty($uploadedFiles))
+                                    <div class="mt-4 border-t border-gray-200 pt-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Archivos nuevos a subir:</h4>
+                                        <div class="space-y-2">
+                                            @foreach($uploadedFiles as $index => $file)
+                                                <div class="flex items-center justify-between bg-green-50 px-3 py-2 rounded-md">
+                                                    <div class="flex items-center">
+                                                        <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        <span class="text-sm text-gray-700">{{ $file->getClientOriginalName() }}</span>
+                                                        <span class="text-xs text-gray-500 ml-2">({{ number_format($file->getSize() / 1024, 1) }} KB)</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        wire:click="removeUploadedFile({{ $index }})"
+                                                        class="text-red-600 hover:text-red-800">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 @endif
 

@@ -105,17 +105,57 @@ trait SubjectQuestionsTrait
     }
 
     /**
-     * Generar la ruta de archivo para una pregunta
+     * Generar la ruta de carpeta para una pregunta (sin el archivo)
      */
-    public function generateQuestionFilePath($questionId, $termName, $subjectName, $filename)
+    public function generateQuestionFolderPath($questionId, $termCode, $subjectName)
     {
         // Convertir nombre de asignatura a slug
         $subjectSlug = Str::slug($subjectName);
 
-        // Crear estructura de carpetas: periodo/asignatura-slug/p{id}/
-        $folderPath = "questions/{$termName}/{$subjectSlug}/p{$questionId}";
+        // Crear estructura de carpetas: codigo_periodo/asignatura-slug/p{id}/
+        return "questions/{$termCode}/{$subjectSlug}/p{$questionId}";
+    }
 
-        return "{$folderPath}/{$filename}";
+    /**
+     * Obtener la ruta completa de archivos para una pregunta
+     */
+    public function getQuestionFilesPath($questionFolderPath)
+    {
+        $fullPath = storage_path('app/public/' . $questionFolderPath);
+
+        if (!file_exists($fullPath)) {
+            return [];
+        }
+
+        $files = [];
+        $fileList = scandir($fullPath);
+
+        foreach ($fileList as $file) {
+            if ($file !== '.' && $file !== '..') {
+                $files[] = [
+                    'name' => $file,
+                    'path' => $questionFolderPath . '/' . $file,
+                    'url' => asset('storage/' . $questionFolderPath . '/' . $file),
+                    'size' => filesize($fullPath . '/' . $file)
+                ];
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Crear directorio para la pregunta si no existe
+     */
+    public function ensureQuestionDirectoryExists($folderPath)
+    {
+        $fullPath = storage_path('app/public/' . $folderPath);
+
+        if (!file_exists($fullPath)) {
+            mkdir($fullPath, 0755, true);
+        }
+
+        return $fullPath;
     }
 
     /**

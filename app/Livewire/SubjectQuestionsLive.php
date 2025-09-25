@@ -22,6 +22,7 @@ class SubjectQuestionsLive extends Component
     public $topic;
     public $topicId;
     public $uploadedFiles = [];
+    public $existingFiles = []; // Nueva propiedad para archivos existentes
 
     // Control properties
     public $isCreate = false;
@@ -53,6 +54,7 @@ class SubjectQuestionsLive extends Component
     {
         $this->form->reset();
         $this->uploadedFiles = [];
+        $this->existingFiles = [];
         $this->form->topic_id = $this->topicId;
         $this->form->chapter_id = $this->topic->chapter_id;
         $this->form->subject_id = $this->topic->chapter->subject_id;
@@ -66,6 +68,7 @@ class SubjectQuestionsLive extends Component
     {
         $this->form->reset();
         $this->uploadedFiles = [];
+        $this->existingFiles = [];
         $this->form->topic_id = $this->topicId;
         $this->form->chapter_id = $this->topic->chapter_id;
         $this->form->subject_id = $this->topic->chapter->subject_id;
@@ -110,6 +113,14 @@ class SubjectQuestionsLive extends Component
     {
         $this->uploadedFiles = [];
         $this->form->setQuestion($question);
+
+        // Cargar archivos existentes si los hay
+        if ($question->path) {
+            $this->existingFiles = $this->getQuestionFilesPath($question->path);
+        } else {
+            $this->existingFiles = [];
+        }
+
         $this->isEdit = true;
         $this->isCreate = true; // Para mostrar el formulario
     }
@@ -192,6 +203,27 @@ class SubjectQuestionsLive extends Component
         $this->uploadedFiles = array_values($this->uploadedFiles);
     }
 
+    // Eliminar un archivo existente
+    public function deleteExistingFile($filePath)
+    {
+        $fullPath = storage_path('app/public/' . $filePath);
+
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+
+            // Recargar archivos existentes
+            if ($this->form->question && $this->form->question->path) {
+                $this->existingFiles = $this->getQuestionFilesPath($this->form->question->path);
+            }
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Éxito!',
+                'text' => 'Archivo eliminado correctamente.',
+                'icon' => 'success'
+            ]);
+        }
+    }
+
     private function processUploadedFiles(Question $question)
     {
         if (empty($this->uploadedFiles)) return;
@@ -199,25 +231,27 @@ class SubjectQuestionsLive extends Component
         $activeTerm = $this->getActiveTerm();
         $subjectName = $this->topic->chapter->subject->name;
 
-        $uploadedPaths = [];
+        // Generar la ruta de la carpeta usando el código del periodo
+        $folderPath = $this->generateQuestionFolderPath(
+            $question->id,
+            $activeTerm->code, // Usar el código del periodo, no el nombre
+            $subjectName
+        );
 
+        // Crear el directorio si no existe
+        $this->ensureQuestionDirectoryExists($folderPath);
+
+        // Guardar cada archivo en la carpeta de la pregunta
         foreach ($this->uploadedFiles as $file) {
             $originalName = $file->getClientOriginalName();
-            $filePath = $this->generateQuestionFilePath(
-                $question->id,
-                $activeTerm->name,
-                $subjectName,
-                $originalName
-            );
 
-            // Guardar archivo en storage público
-            $file->storeAs('public/' . dirname($filePath), basename($filePath));
-            $uploadedPaths[] = $filePath;
+            // Guardar el archivo en storage/app/public/
+            $file->storeAs($folderPath, $originalName, 'public');
         }
 
-        // Actualizar el path de la pregunta (guardamos solo el primer archivo o concatenamos)
+        // Actualizar el path de la pregunta con la ruta de la carpeta
         $question->update([
-            'path' => $uploadedPaths[0] ?? null
+            'path' => $folderPath
         ]);
     }
 
