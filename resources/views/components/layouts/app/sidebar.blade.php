@@ -43,6 +43,7 @@
                         Bancos
                     </flux:navlist.item>
 
+
                 </flux:navlist.group>
             @endcan
             @can('menu subject categories')
@@ -70,6 +71,14 @@
                         wire:navigate
                     >
                         Importar
+                    </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="question-mark-circle"
+                        :href="route('questions.index')"
+                        :current="request()->routeIs('questions.index')"
+                        wire:navigate
+                    >
+                        Preguntas
                     </flux:navlist.item>
 
                 </flux:navlist.group>

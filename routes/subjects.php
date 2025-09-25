@@ -19,5 +19,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/import-questions', [\App\Http\Controllers\ImportQuestionsController::class,'index'])
         ->name('import.questions.index');
 
+    Route::get('/questions', [\App\Http\Controllers\Banks\QuestionsController::class,'index'])
+        ->name('questions.index');
+
 });
 
