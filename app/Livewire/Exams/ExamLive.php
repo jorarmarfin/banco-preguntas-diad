@@ -143,6 +143,11 @@ class ExamLive extends Component
         ]);
     }
 
+    public function viewQuestions($examId)
+    {
+        return redirect()->route('exams.show', ['id' => $examId]);
+    }
+
     public function generateCode()
     {
         $this->form->code = $this->generateExamCode();

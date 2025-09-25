@@ -11,4 +11,8 @@ class ExamController extends Controller
     {
         return view('exams.index');
     }
+    public function show($id)
+    {
+        return view('exams.show', ['id' => $id]);
+    }
 }
