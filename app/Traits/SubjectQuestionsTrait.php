@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Bank;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Enums\QuestionStatus;
@@ -77,22 +78,22 @@ trait SubjectQuestionsTrait
     public function getNextQuestionCode($topicId)
     {
         $topic = $this->getTopicById($topicId);
-        if (!$topic) return 'Q001';
+        if (!$topic) return 'p1';
 
-        $subject = $topic->chapter->subject;
+        // Buscar la última pregunta del tema para obtener el número secuencial
         $lastQuestion = Question::where('topic_id', $topicId)
-            ->orderBy('code', 'desc')
+            ->orderBy('id', 'desc')
             ->first();
 
         if (!$lastQuestion) {
-            return $subject->code . '001';
+            return 'p1';
         }
 
-        // Extraer el número del último código y incrementar
-        $lastNumber = intval(substr($lastQuestion->code, -3));
-        $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        // Extraer el número del código (p1 -> 1, p2 -> 2, etc.)
+        $lastNumber = intval(str_replace('p', '', $lastQuestion->code));
+        $newNumber = $lastNumber + 1;
 
-        return $subject->code . $newNumber;
+        return 'p' . $newNumber;
     }
 
     /**
@@ -111,9 +112,10 @@ trait SubjectQuestionsTrait
     {
         // Convertir nombre de asignatura a slug
         $subjectSlug = Str::slug($subjectName);
+        $activeBank = Bank::where('active', true)->first()->folder_slug;
 
         // Crear estructura de carpetas: codigo_periodo/asignatura-slug/p{id}/
-        return "questions/{$termCode}/{$subjectSlug}/p{$questionId}";
+        return "{$activeBank}/{$subjectSlug}/p{$questionId}";
     }
 
     /**
@@ -121,7 +123,7 @@ trait SubjectQuestionsTrait
      */
     public function getQuestionFilesPath($questionFolderPath)
     {
-        $fullPath = storage_path('app/public/' . $questionFolderPath);
+        $fullPath = storage_path('app/' . $questionFolderPath);
 
         if (!file_exists($fullPath)) {
             return [];
@@ -135,7 +137,7 @@ trait SubjectQuestionsTrait
                 $files[] = [
                     'name' => $file,
                     'path' => $questionFolderPath . '/' . $file,
-                    'url' => asset('storage/' . $questionFolderPath . '/' . $file),
+                    'url' => '#', // Los archivos privados no tienen URL pública directa
                     'size' => filesize($fullPath . '/' . $file)
                 ];
             }
@@ -149,7 +151,7 @@ trait SubjectQuestionsTrait
      */
     public function ensureQuestionDirectoryExists($folderPath)
     {
-        $fullPath = storage_path('app/public/' . $folderPath);
+        $fullPath = storage_path('app/private/' . $folderPath);
 
         if (!file_exists($fullPath)) {
             mkdir($fullPath, 0755, true);
@@ -164,5 +166,36 @@ trait SubjectQuestionsTrait
     public function getStatusOptions()
     {
         return QuestionStatus::options();
+    }
+
+    /**
+     * Eliminar la carpeta de archivos de una pregunta
+     */
+    public function deleteQuestionFolder($questionFolderPath)
+    {
+        if (empty($questionFolderPath)) {
+            return false;
+        }
+
+        $fullPath = storage_path('app/' . $questionFolderPath);
+
+        if (file_exists($fullPath) && is_dir($fullPath)) {
+            // Eliminar todos los archivos dentro de la carpeta
+            $files = scandir($fullPath);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..') {
+                    $filePath = $fullPath . '/' . $file;
+                    if (is_file($filePath)) {
+                        unlink($filePath);
+                    }
+                }
+            }
+
+            // Eliminar la carpeta vacía
+            rmdir($fullPath);
+            return true;
+        }
+
+        return false;
     }
 }

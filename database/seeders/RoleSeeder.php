@@ -36,6 +36,7 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'menu question types'])->syncRoles([$sy ,$de]);
         Permission::create(['name' => 'menu subject categories'])->syncRoles([$sy,$de]);
         Permission::create(['name' => 'menu subjects'])->syncRoles([$sy,$de]);
+        Permission::create(['name' => 'menu question proposals'])->syncRoles([$sy,$de]);
 
         Permission::create(['name' => 'manage Subject categories'])->syncRoles([$sy]);
         Permission::create(['name' => 'manage Subjects'])->syncRoles([$sy]);
@@ -51,5 +52,6 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'manage Roles'])->syncRoles([$sy]);
         Permission::create(['name' => 'manage Permissions'])->syncRoles([$sy]);
         Permission::create(['name' => 'manage Settings'])->syncRoles([$sy]);
+        Permission::create(['name' => 'manage Question proposals'])->syncRoles([$sy,$de]);
     }
 }

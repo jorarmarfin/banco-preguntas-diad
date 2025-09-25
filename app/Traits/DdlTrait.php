@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Subject;
 use App\Models\SubjectCategories;
 use App\Models\Term;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,5 +32,9 @@ trait DdlTrait
             'medium' => 'Medio',
             'hard' => 'Difícil'
         ];
+    }
+    public function DdlSubjects()
+    {
+        return Subject::select('id', 'name')->orderBy('name')->pluck('name', 'id');
     }
 }

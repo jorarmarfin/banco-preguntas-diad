@@ -14,6 +14,7 @@ class Question extends Model
         'chapter_id',
         'topic_id',
         'term_id',
+        'bank_id',
         'difficulty',
         'points',
         'latex_body',
@@ -23,6 +24,7 @@ class Question extends Model
         'reviewed_at',
         'estimated_time',
         'comments',
+        'path'
     ];
 
     /**
@@ -56,6 +58,14 @@ class Question extends Model
     {
         return $this->belongsTo(Term::class);
     }
+    /**
+     * Get the bank that owns the question
+     */
+    public function bank(): BelongsTo
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
 
     /**
      * Get the user who reviewed this question

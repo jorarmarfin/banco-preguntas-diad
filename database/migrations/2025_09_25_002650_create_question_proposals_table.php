@@ -18,11 +18,11 @@ return new class extends Migration
             $table->foreignId('chapter_id')->nullable()->nullable()->constrained('chapters');
             $table->foreignId('topic_id')->nullable()->nullable()->constrained('topics');
             $table->foreignId('term_id')->nullable()->nullable()->constrained('terms');
+            $table->foreignId('bank_id')->nullable()->nullable()->constrained('banks');
             $table->string('difficulty');// ['easy', 'medium', 'hard']
             $table->text('latex_body')->nullable();
             $table->text('latex_solution')->nullable();
             $table->string('status');// ['draft', 'approved', 'archived']
-            $table->foreignId('reviewed_by')->nullable()->nullable()->constrained('users');
             $table->integer('estimated_time')->nullable(); // in seconds
             $table->text('comments')->nullable();
             $table->string('path')->nullable();

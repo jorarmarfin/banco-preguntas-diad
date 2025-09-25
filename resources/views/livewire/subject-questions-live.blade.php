@@ -13,10 +13,11 @@
                 <div>
                     <h3 class="text-lg font-semibold text-gray-900">{{ $topic->name }}</h3>
                     <p class="text-sm text-gray-500">{{ $topic->chapter->name }} - {{ $topic->chapter->subject->name }} ({{ $topic->chapter->subject->code }})</p>
-                    @if($activeTerm)
-                        <p class="text-xs text-green-600 font-medium">Período activo: {{ $activeTerm->name }}</p>
+
+                    @if($activeBank)
+                        <p class="text-xs text-blue-600 font-medium">Banco activo: {{ $activeBank->name }}</p>
                     @else
-                        <p class="text-xs text-red-600 font-medium">⚠️ No hay período activo</p>
+                        <p class="text-xs text-red-600 font-medium">⚠️ No hay banco de preguntas activo</p>
                     @endif
                 </div>
             </div>
@@ -77,18 +78,10 @@
                                     wire:model="form.code"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm @error('form.code') border-red-300 focus:ring-red-500 @enderror"
                                     id="code"
-                                    placeholder="Ej: AL001, GE002">
+                                    placeholder="Ingrese el código de la pregunta">
                                 @error('form.code')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Período Activo
-                                </label>
-                                <div class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700">
-                                    {{ $activeTerm ? $activeTerm->name : 'No hay período activo' }}
-                                </div>
                             </div>
                         </div>
 
@@ -150,33 +143,8 @@
                                 Archivos de la Pregunta
                             </label>
 
-                            <!-- Zona de drag and drop mejorada -->
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-400 transition-colors"
-                                 x-data="{
-                                     isDragging: false,
-                                     handleDragOver(e) {
-                                         e.preventDefault();
-                                         this.isDragging = true;
-                                     },
-                                     handleDragLeave(e) {
-                                         e.preventDefault();
-                                         this.isDragging = false;
-                                     },
-                                     handleDrop(e) {
-                                         e.preventDefault();
-                                         this.isDragging = false;
-                                         const files = e.dataTransfer.files;
-                                         if (files.length > 0) {
-                                             document.getElementById('file-upload').files = files;
-                                             document.getElementById('file-upload').dispatchEvent(new Event('change'));
-                                         }
-                                     }
-                                 }"
-                                 :class="{ 'border-orange-400 bg-orange-50': isDragging }"
-                                 @dragover="handleDragOver"
-                                 @dragleave="handleDragLeave"
-                                 @drop="handleDrop">
-
+                            <!-- Input simple de archivos -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
                                 <div class="text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -184,7 +152,7 @@
                                     <div class="mt-4">
                                         <label for="file-upload" class="cursor-pointer">
                                             <span class="mt-2 block text-sm font-medium text-gray-900">
-                                                Arrastra archivos aquí o haz clic para seleccionar
+                                                Seleccionar archivos
                                             </span>
                                             <input
                                                 id="file-upload"

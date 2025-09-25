@@ -7,6 +7,7 @@ use App\Models\Topic;
 use App\Traits\SubjectQuestionsTrait;
 use App\Traits\DdlTrait;
 use App\Traits\ActiveTermTrait;
+use App\Traits\BankTrait;
 use App\Livewire\Forms\QuestionForm;
 use App\Enums\QuestionStatus;
 use Livewire\Component;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
 
 class SubjectQuestionsLive extends Component
 {
-    use WithPagination, WithFileUploads, SubjectQuestionsTrait, DdlTrait, ActiveTermTrait;
+    use WithPagination, WithFileUploads, SubjectQuestionsTrait, DdlTrait, ActiveTermTrait, BankTrait;
 
     public QuestionForm $form;
     public $topic;
@@ -52,6 +53,26 @@ class SubjectQuestionsLive extends Component
 
     public function showCreateForm()
     {
+        // Verificar que hay un período activo
+        if (!$this->hasActiveTerm()) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay un período activo configurado. Configure un período antes de agregar preguntas.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        // Verificar que hay un banco activo
+        if (!$this->hasActiveBank()) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay un banco de preguntas activo. Active un banco antes de agregar preguntas.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
         $this->form->reset();
         $this->uploadedFiles = [];
         $this->existingFiles = [];
@@ -167,11 +188,17 @@ class SubjectQuestionsLive extends Component
                 return;
             }
 
+            // Eliminar la carpeta de archivos si existe
+            if (!empty($question->path)) {
+                $this->deleteQuestionFolder($question->path);
+            }
+
+            // Eliminar el registro de la base de datos
             $this->deleteQuestion($question);
 
             $this->dispatch('swal:success', [
                 'title' => '¡Éxito!',
-                'text' => 'Pregunta eliminada correctamente.',
+                'text' => 'Pregunta y archivos eliminados correctamente.',
                 'icon' => 'success'
             ]);
 
@@ -206,7 +233,7 @@ class SubjectQuestionsLive extends Component
     // Eliminar un archivo existente
     public function deleteExistingFile($filePath)
     {
-        $fullPath = storage_path('app/public/' . $filePath);
+        $fullPath = storage_path('app/' . $filePath);
 
         if (file_exists($fullPath)) {
             unlink($fullPath);
@@ -233,7 +260,7 @@ class SubjectQuestionsLive extends Component
 
         // Generar la ruta de la carpeta usando el código del periodo
         $folderPath = $this->generateQuestionFolderPath(
-            $question->id,
+            $question->code,
             $activeTerm->code, // Usar el código del periodo, no el nombre
             $subjectName
         );
@@ -241,29 +268,27 @@ class SubjectQuestionsLive extends Component
         // Crear el directorio si no existe
         $this->ensureQuestionDirectoryExists($folderPath);
 
-        // Guardar cada archivo en la carpeta de la pregunta
+        // Guardar cada archivo en la carpeta de la pregunta usando el disco 'local'
         foreach ($this->uploadedFiles as $file) {
             $originalName = $file->getClientOriginalName();
 
-            // Guardar el archivo en storage/app/public/
-            $file->storeAs($folderPath, $originalName, 'public');
+            // Guardar el archivo en storage/app/ usando el disco 'local'
+            $file->storeAs($folderPath, $originalName, 'local');
         }
 
         // Actualizar el path de la pregunta con la ruta de la carpeta
         $question->update([
-            'path' => $folderPath
+            'path' => 'private/' . $folderPath
         ]);
     }
 
     public function render()
     {
-        $activeTerm = $this->getActiveTerm();
-
         return view('livewire.subject-questions-live', [
             'questions' => $this->getQuestionsPaginated($this->topicId, 50),
             'difficultyOptions' => $this->DdlDifficultyOptions(),
             'statusOptions' => QuestionStatus::options(),
-            'activeTerm' => $activeTerm
+            'activeBank' => $this->getActiveBank()
         ]);
     }
 }

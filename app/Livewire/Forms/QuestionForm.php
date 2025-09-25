@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Enums\QuestionStatus;
+use App\Models\Bank;
 use App\Models\Question;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -24,6 +25,7 @@ class QuestionForm extends Form
     public $chapter_id = '';
 
     public $term_id = ''; // Se asignará automáticamente
+    public $bank_id = ''; // Se asignará automáticamente
 
     #[Validate('required|in:easy,medium,hard')]
     public $difficulty = 'medium';
@@ -43,11 +45,12 @@ class QuestionForm extends Form
     public function rules()
     {
         return [
-            'code' => 'required|string|max:255|unique:questions,code,' . ($this->question->id ?? 'NULL'),
+            'code' => 'required|string|max:255',
             'topic_id' => 'required|integer|exists:topics,id',
             'subject_id' => 'required|integer|exists:subjects,id',
             'chapter_id' => 'required|integer|exists:chapters,id',
             'term_id' => 'required|integer|exists:terms,id',
+            'bank_id' => 'nullable|integer|exists:banks,id',
             'difficulty' => 'required|in:facil,medio,dificil',
             'status' => 'required|in:' . implode(',', array_column(QuestionStatus::cases(), 'value')),
             'estimated_time' => 'nullable|integer|min:30|max:7200',
@@ -65,6 +68,7 @@ class QuestionForm extends Form
         $this->subject_id = $question->subject_id;
         $this->chapter_id = $question->chapter_id;
         $this->term_id = $question->term_id;
+        $this->bank_id = $question->bank_id; // Usar el banco de la pregunta, no siempre el activo
         $this->difficulty = $question->difficulty;
         $this->status = $question->status;
         $this->estimated_time = $question->estimated_time;
@@ -74,10 +78,13 @@ class QuestionForm extends Form
 
     public function store()
     {
+        // Asignar automáticamente el banco activo antes de validar
+        $this->bank_id = Bank::where('active', true)->value('id');
+
         $this->validate();
 
         Question::create($this->only([
-            'code', 'topic_id', 'subject_id', 'chapter_id', 'term_id',
+            'code', 'topic_id', 'subject_id', 'chapter_id', 'term_id', 'bank_id',
             'difficulty', 'status', 'estimated_time', 'comments', 'path'
         ]));
 
@@ -88,10 +95,15 @@ class QuestionForm extends Form
 
     public function update()
     {
+        // Para actualizar, mantener el banco original o usar el activo si no tiene banco
+        if (empty($this->bank_id)) {
+            $this->bank_id = Bank::where('active', true)->value('id');
+        }
+
         $this->validate();
 
         $this->question->update($this->only([
-            'code', 'topic_id', 'subject_id', 'chapter_id', 'term_id',
+            'code', 'topic_id', 'subject_id', 'chapter_id', 'term_id', 'bank_id',
             'difficulty', 'status', 'estimated_time', 'comments', 'path'
         ]));
 
@@ -106,6 +118,7 @@ class QuestionForm extends Form
         $this->subject_id = '';
         $this->chapter_id = '';
         $this->term_id = '';
+        $this->bank_id = '';
         $this->difficulty = 'medium';
         $this->status = QuestionStatus::DRAFT->value;
         $this->estimated_time = 300;

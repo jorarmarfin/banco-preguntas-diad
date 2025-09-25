@@ -34,11 +34,19 @@
                     >
                         Periodo
                     </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="building-library"
+                        :href="route('bank.index')"
+                        :current="request()->routeIs('bank.index')"
+                        wire:navigate
+                    >
+                        Bancos
+                    </flux:navlist.item>
 
                 </flux:navlist.group>
             @endcan
             @can('menu subject categories')
-                <flux:navlist.group heading="Menu Asignaturas" expandable>
+                <flux:navlist.group heading="Banco" expandable>
                     <flux:navlist.item
                         icon="tag"
                         :href="route('subject.categories.index')"
@@ -54,6 +62,48 @@
                         wire:navigate
                     >
                         Asignaturas
+                    </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="arrow-up-on-square"
+                        :href="route('import.questions.index')"
+                        :current="request()->routeIs('import.questions.index')"
+                        wire:navigate
+                    >
+                        Importar
+                    </flux:navlist.item>
+
+                </flux:navlist.group>
+            @endcan
+            @can('menu draws')
+                <flux:navlist.group heading="Sortear" expandable>
+                    <flux:navlist.item
+                        icon="bookmark-square"
+                        :href="route('subject.categories.index')"
+                        :current="request()->routeIs('subject.categories.index')"
+                        wire:navigate
+                    >
+                        Exámenes
+                    </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="tag"
+                        :href="route('subject.categories.index')"
+                        :current="request()->routeIs('subject.categories.index')"
+                        wire:navigate
+                    >
+                        Categorías
+                    </flux:navlist.item>
+
+                </flux:navlist.group>
+            @endcan
+            @can('menu question proposals')
+                <flux:navlist.group heading="Elaboración Banco" expandable>
+                    <flux:navlist.item
+                        icon="tag"
+                        :href="route('subject.categories.index')"
+                        :current="request()->routeIs('subject.categories.index')"
+                        wire:navigate
+                    >
+                        Categorías
                     </flux:navlist.item>
 
                 </flux:navlist.group>

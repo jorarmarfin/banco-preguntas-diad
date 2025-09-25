@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('chapter_id')->nullable()->nullable()->constrained('chapters');
             $table->foreignId('topic_id')->nullable()->nullable()->constrained('topics');
             $table->foreignId('term_id')->nullable()->nullable()->constrained('terms');
+            $table->foreignId('bank_id')->nullable()->nullable()->constrained('banks');
             $table->string('difficulty');// ['easy', 'medium', 'hard']
             $table->text('latex_body')->nullable();
             $table->text('latex_solution')->nullable();
@@ -29,6 +30,8 @@ return new class extends Migration
             $table->string('path')->nullable();
 
             $table->timestamps();
+
+            $table->unique(['topic_id', 'code','bank_id']);
         });
     }
 
