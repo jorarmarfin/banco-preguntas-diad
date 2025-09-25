@@ -152,10 +152,9 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <button
                             wire:click="toggleActive({{ $bank->id }})"
-                            class="relative inline-flex items-center cursor-pointer">
-                            <div class="w-11 h-6 {{ $bank->active ? 'bg-blue-600' : 'bg-gray-200' }} rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">
-                                <div class="absolute top-[2px] {{ $bank->active ? 'left-[22px]' : 'left-[2px]' }} bg-white border border-gray-300 rounded-full h-5 w-5 transition-all duration-200"></div>
-                            </div>
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ $bank->active ? 'bg-blue-600' : 'bg-gray-200' }}">
+                            <span class="sr-only">Toggle bank status</span>
+                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $bank->active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                         </button>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

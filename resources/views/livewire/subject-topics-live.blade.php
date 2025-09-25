@@ -60,7 +60,21 @@
             </div>
             <div class="p-6">
                 <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
+                                Código <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                wire:model="form.code"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm @error('form.code') border-red-300 focus:ring-red-500 @enderror"
+                                id="code"
+                                placeholder="Ej: T01, TEM01, etc.">
+                            @error('form.code')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                                 Nombre del Tema <span class="text-red-500">*</span>
@@ -116,16 +130,19 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                 <tr>
-                    <th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         ID
                     </th>
-                    <th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Código
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Orden
                     </th>
-                    <th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nombre
                     </th>
-                    <th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Preguntas
                     </th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -138,6 +155,11 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $topic->id }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                {{ $topic->code }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">

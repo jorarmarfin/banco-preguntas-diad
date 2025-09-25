@@ -46,11 +46,22 @@ trait TermTrait
                 ->update(['is_active' => false]);
         }
 
-        return $term->update([
-            'code' => $data['code'],
-            'name' => $data['name'],
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        // Only update fields that are provided in the data array
+        $updateData = [];
+
+        if (array_key_exists('code', $data)) {
+            $updateData['code'] = $data['code'];
+        }
+
+        if (array_key_exists('name', $data)) {
+            $updateData['name'] = $data['name'];
+        }
+
+        if (array_key_exists('is_active', $data)) {
+            $updateData['is_active'] = $data['is_active'];
+        }
+
+        return $term->update($updateData);
     }
 
     /**

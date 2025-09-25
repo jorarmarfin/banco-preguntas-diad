@@ -36,8 +36,8 @@
                     </flux:navlist.item>
                     <flux:navlist.item
                         icon="building-library"
-                        :href="route('bank.index')"
-                        :current="request()->routeIs('bank.index')"
+                        :href="route('banks.index')"
+                        :current="request()->routeIs('banks.index')"
                         wire:navigate
                     >
                         Bancos

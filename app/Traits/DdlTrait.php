@@ -5,6 +5,8 @@ namespace App\Traits;
 use App\Models\Subject;
 use App\Models\SubjectCategories;
 use App\Models\Term;
+use App\Enums\QuestionDifficulty;
+use App\Enums\QuestionStatus;
 use Illuminate\Database\Eloquent\Collection;
 
 trait DdlTrait
@@ -27,12 +29,17 @@ trait DdlTrait
      */
     public function DdlDifficultyOptions(): array
     {
-        return [
-            'easy' => 'Fácil',
-            'medium' => 'Medio',
-            'hard' => 'Difícil'
-        ];
+        return QuestionDifficulty::toArray();
     }
+
+    /**
+     * Get status options for questions
+     */
+    public function DdlStatusOptions(): array
+    {
+        return QuestionStatus::options();
+    }
+
     public function DdlSubjects()
     {
         return Subject::select('id', 'name')->orderBy('name')->pluck('name', 'id');

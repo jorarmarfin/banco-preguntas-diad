@@ -123,6 +123,31 @@ class TermLive extends Component
         ]);
     }
 
+    public function toggleActive($termId)
+    {
+        $term = $this->findTerm($termId);
+
+        if ($term) {
+            // Si el período está activo, lo desactivamos
+            if ($term->is_active) {
+                $this->updateTerm($term, ['is_active' => false]);
+                $this->dispatch('swal:success', [
+                    'title' => '¡Éxito!',
+                    'text' => "Período académico desactivado correctamente.",
+                    'icon' => 'success'
+                ]);
+            } else {
+                // Si el período está inactivo, lo activamos (esto desactivará automáticamente los otros)
+                $this->updateTerm($term, ['is_active' => true]);
+                $this->dispatch('swal:success', [
+                    'title' => '¡Éxito!',
+                    'text' => "Período académico activado correctamente. Los demás períodos han sido desactivados automáticamente.",
+                    'icon' => 'success'
+                ]);
+            }
+        }
+    }
+
     public function render()
     {
         $terms = $this->getTermsPaginated(10);

@@ -22,6 +22,7 @@ class TopicSeeder extends Seeder
             // Generar 5 temas para cada capítulo
             for ($topicNumber = 1; $topicNumber <= 5; $topicNumber++) {
                 $topics[] = [
+                    'code' => "{$topicNumber}",
                     'name' => "Tema {$topicNumber}",
                     'chapter_id' => $chapter->id,
                     'order' => $topicNumber,

@@ -10,6 +10,9 @@ class ChapterForm extends Form
 {
     public ?Chapter $chapter;
 
+    #[Validate('required|string|max:50')]
+    public $code = '';
+
     #[Validate('required|string|max:255')]
     public $name = '';
 
@@ -22,6 +25,7 @@ class ChapterForm extends Form
     public function setChapter(Chapter $chapter)
     {
         $this->chapter = $chapter;
+        $this->code = $chapter->code;
         $this->name = $chapter->name;
         $this->subject_id = $chapter->subject_id;
         $this->order = $chapter->order;
@@ -31,7 +35,7 @@ class ChapterForm extends Form
     {
         $this->validate();
 
-        Chapter::create($this->only(['name', 'subject_id', 'order']));
+        Chapter::create($this->only(['code', 'name', 'subject_id', 'order']));
 
         $this->reset();
 
@@ -42,7 +46,7 @@ class ChapterForm extends Form
     {
         $this->validate();
 
-        $this->chapter->update($this->only(['name', 'subject_id', 'order']));
+        $this->chapter->update($this->only(['code', 'name', 'subject_id', 'order']));
 
         return true;
     }
@@ -50,6 +54,7 @@ class ChapterForm extends Form
     public function reset(...$properties)
     {
         $this->chapter = null;
+        $this->code = '';
         $this->name = '';
         $this->subject_id = '';
         $this->order = 1;

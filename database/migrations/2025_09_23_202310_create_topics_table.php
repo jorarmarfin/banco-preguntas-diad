@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('topics', function (Blueprint $table) {
             $table->id();
+            $table->string('code');
             $table->string('name');
             $table->integer('order')->default(0);
             $table->foreignId('chapter_id')->nullable()->constrained()->nullOnDelete();
 
             $table->timestamps();
+            $table->unique(['code', 'chapter_id']);
         });
     }
 

@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('chapters', function (Blueprint $table) {
             $table->id();
+            $table->string('code');
             $table->string('name');
             $table->foreignId('subject_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('order')->default(0);
+            $table->timestamps();
+            $table->unique(['code', 'subject_id']);
         });
     }
 

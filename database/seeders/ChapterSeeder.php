@@ -19,6 +19,7 @@ class ChapterSeeder extends Seeder
         for ($subjectId = 1; $subjectId <= 21; $subjectId++) {
             for ($chapterNumber = 1; $chapterNumber <= 10; $chapterNumber++) {
                 $chapters[] = [
+                    'code' => "{$chapterNumber}",
                     'name' => "Capítulo {$chapterNumber}",
                     'subject_id' => $subjectId,
                     'order' => $chapterNumber,

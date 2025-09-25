@@ -10,6 +10,9 @@ class TopicForm extends Form
 {
     public ?Topic $topic;
 
+    #[Validate('required|string|max:50')]
+    public $code = '';
+
     #[Validate('required|string|max:255')]
     public $name = '';
 
@@ -22,6 +25,7 @@ class TopicForm extends Form
     public function setTopic(Topic $topic)
     {
         $this->topic = $topic;
+        $this->code = $topic->code;
         $this->name = $topic->name;
         $this->chapter_id = $topic->chapter_id;
         $this->order = $topic->order;
@@ -31,7 +35,7 @@ class TopicForm extends Form
     {
         $this->validate();
 
-        Topic::create($this->only(['name', 'chapter_id', 'order']));
+        Topic::create($this->only(['code', 'name', 'chapter_id', 'order']));
 
         $this->reset();
 
@@ -42,7 +46,7 @@ class TopicForm extends Form
     {
         $this->validate();
 
-        $this->topic->update($this->only(['name', 'chapter_id', 'order']));
+        $this->topic->update($this->only(['code', 'name', 'chapter_id', 'order']));
 
         return true;
     }
@@ -50,6 +54,7 @@ class TopicForm extends Form
     public function reset(...$properties)
     {
         $this->topic = null;
+        $this->code = '';
         $this->name = '';
         $this->chapter_id = '';
         $this->order = 1;

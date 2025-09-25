@@ -151,15 +151,12 @@
                         {{ $term->name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($term->is_active)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Activo
-                                        </span>
-                        @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            Inactivo
-                                        </span>
-                        @endif
+                        <button
+                            wire:click="toggleActive({{ $term->id }})"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ $term->is_active ? 'bg-blue-600' : 'bg-gray-200' }}">
+                            <span class="sr-only">Toggle term status</span>
+                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $term->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                        </button>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">

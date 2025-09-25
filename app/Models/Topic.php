@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Topic extends Model
 {
     protected $fillable = ['code', 'name', 'order', 'chapter_id'];
-    public $timestamps = false;
 
     /**
      * Get the chapter that owns the topic
