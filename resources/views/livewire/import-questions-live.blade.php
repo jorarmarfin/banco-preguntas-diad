@@ -84,7 +84,6 @@
                 <div class="flex-shrink-0">
                     <svg class="h-8 w-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>
                 </div>
                 <div class="ml-4">
                     <div class="flex">
@@ -267,19 +266,39 @@
                                 </div>
                                 <div class="ml-3">
                                     <h3 class="text-sm font-medium text-blue-800">
-                                        Formato del archivo CSV
+                                        Estructura de Importación
                                     </h3>
                                     <div class="mt-2 text-sm text-blue-700">
-                                        <p>El archivo CSV debe contener las siguientes columnas:</p>
+                                        <p><strong>Estructura de carpetas requerida:</strong></p>
+                                        <div class="mt-2 bg-blue-100 p-3 rounded text-xs font-mono">
+                                            storage/app/private/import/{nombre_carpeta}/<br>
+                                            ├── data.csv<br>
+                                            ├── p694/ (archivos de la pregunta)<br>
+                                            ├── p699/ (archivos de la pregunta)<br>
+                                            └── ...
+                                        </div>
+
+                                        <p class="mt-3"><strong>El archivo CSV debe contener las siguientes columnas:</strong></p>
                                         <ul class="list-disc list-inside mt-1 space-y-1">
                                             <li><strong>codigo:</strong> Código de la pregunta (p1, p2, p3, etc.)</li>
-                                            <li><strong>capitulo:</strong> Nombre del capítulo</li>
-                                            <li><strong>tema:</strong> Nombre del tema</li>
-                                            <li><strong>dificultad:</strong> easy, medium, hard</li>
-                                            <li><strong>estado:</strong> draft, active, inactive</li>
-                                            <li><strong>tiempo_estimado:</strong> Tiempo en segundos</li>
+                                            <li><strong>capitulo:</strong> Código numérico del capítulo</li>
+                                            <li><strong>tema:</strong> Código numérico del tema</li>
+                                            <li><strong>dificultad:</strong> F (Fácil), N (Normal), D (Difícil)</li>
+                                            <li><strong>tiempo_estimado:</strong> Tiempo en segundos (opcional)</li>
                                             <li><strong>comentarios:</strong> Comentarios opcionales</li>
                                         </ul>
+
+                                        <p class="mt-3"><strong>Los archivos se copiarán a:</strong></p>
+                                        <div class="mt-1 bg-blue-100 p-3 rounded text-xs font-mono">
+                                            storage/app/private/{banco_activo}/{asignatura_slug}/{codigo_pregunta}/
+                                        </div>
+
+                                        <div class="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded">
+                                            <p class="text-yellow-800 text-xs">
+                                                <strong>Importante:</strong> Si ya existen archivos para una pregunta en el destino,
+                                                la importación se detendrá para evitar sobrescribir archivos existentes.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
