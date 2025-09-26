@@ -15,12 +15,28 @@ class SettingSeeder extends Seeder
     {
         DB::table('settings')->insert([
             [
-                'key' => 'path_questions',
-                'value' => '/storage/app/questions',
+                'key' => 'path_questions_storage',
+                'value' => 'app/private/banks',
             ],
             [
-                'key' => 'path_exams',
-                'value' => '/storage/app/exams',
+                'key' => 'path_exam_export',
+                'value' => 'app/private/exams',
+            ],
+            [
+                'key' => 'path_import_base',
+                'value' => 'import',
+            ],
+            [
+                'key' => 'path_import_banks',
+                'value' => 'private/import/banks',
+            ],
+            [
+                'key' => 'path_banks_base',
+                'value' => 'banks',
+            ],
+            [
+                'key' => 'path_private_banks',
+                'value' => 'private/banks',
             ]
         ]);
     }

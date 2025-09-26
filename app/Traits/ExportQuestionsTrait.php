@@ -35,7 +35,7 @@ trait ExportQuestionsTrait
             }
 
             // Crear la estructura de directorios de destino
-            $basePath = storage_path(config('app.paths.exam_export'));
+            $basePath = storage_path(\App\Models\Setting::where('key', 'path_exam_export')->value('value') ?? 'app/private/exam');
             $termPath = $basePath . '/' . $activeTerm->code;
             $examPath = $termPath . '/' . $exam->code;
 
@@ -80,7 +80,7 @@ trait ExportQuestionsTrait
                     $question = $examQuestion->question;
 
                     // Construir la ruta de origen basada en el path de la pregunta
-                    $sourcePath = storage_path(config('app.paths.questions_storage') . '/' . $question->path);
+                    $sourcePath = storage_path(\App\Models\Setting::where('key', 'path_questions_storage')->value('value') ?? 'app/public') . '/' . $question->path;
 
                     // Verificar si la carpeta de origen existe
                     if (!File::exists($sourcePath) || !File::isDirectory($sourcePath)) {
@@ -187,7 +187,7 @@ trait ExportQuestionsTrait
                 return null;
             }
 
-            $basePath = storage_path(config('app.paths.exam_export'));
+            $basePath = storage_path(\App\Models\Setting::where('key', 'path_exam_export')->value('value') ?? 'app/private/exam');
             $examPath = $basePath . '/' . $activeTerm->code . '/' . $exam->code;
 
             return [

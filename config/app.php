@@ -121,18 +121,4 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Application Paths
-    |--------------------------------------------------------------------------
-    |
-    | Here you can configure custom paths used throughout the application.
-    |
-    */
-
-    'paths' => [
-        'exam_export' => 'app/private/exams',
-        'questions_storage' => 'app/private',
-    ],
 ];

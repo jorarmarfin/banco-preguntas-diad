@@ -33,14 +33,16 @@ trait ImportQuestionsTrait
             }
 
             // Validar que existe la carpeta de importación (donde están las carpetas de preguntas)
-            $importPath = "import/{$folderName}";
+            $importBasePath = \App\Models\Setting::where('key', 'path_import_base')->value('value') ?? 'import';
+            $importPath = "{$importBasePath}/{$folderName}";
             if (!Storage::exists($importPath)) {
                 throw new Exception("No se encontró la carpeta de importación: {$folderName}");
             }
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $destinationPath = "banks/{$activeBank->folder_slug}/{$subjectSlug}";
+            $banksBasePath = \App\Models\Setting::where('key', 'path_banks_base')->value('value') ?? 'banks';
+            $destinationPath = "{$banksBasePath}/{$activeBank->folder_slug}/{$subjectSlug}";
 
             // Leer el archivo CSV subido por la plataforma
             $csvContent = file_get_contents($csvFile->getRealPath());
@@ -228,14 +230,16 @@ trait ImportQuestionsTrait
             }
 
             // Validar que existe la carpeta de importación
-            $importPath = "private/import/banks/{$folderPath}";
+            $importBanksPath = \App\Models\Setting::where('key', 'path_import_banks')->value('value') ?? 'private/import/banks';
+            $importPath = "{$importBanksPath}/{$folderPath}";
             if (!Storage::exists($importPath)) {
                 throw new Exception("No se encontró la carpeta de importación: {$folderPath}");
             }
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $destinationPath = "private/banks/{$activeBank->folder_slug}/{$subjectSlug}";
+            $privateBanksPath = \App\Models\Setting::where('key', 'path_private_banks')->value('value') ?? 'private/banks';
+            $destinationPath = "{$privateBanksPath}/{$activeBank->folder_slug}/{$subjectSlug}";
 
             $imported = 0;
             $errors = [];
