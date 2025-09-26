@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Select de Asignaturas -->
                     <div>
                         <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
@@ -110,18 +110,60 @@
                             @endif
                         </select>
                     </div>
+
+                    <!-- Select de Dificultad -->
+                    <div>
+                        <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
+                            Dificultad
+                        </label>
+                        <select
+                            wire:model.live="selectedDifficulty"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedTopicId) bg-gray-100 @endif"
+                            id="difficulty"
+                            @if(!$selectedTopicId) disabled @endif>
+                            <option value="">Todas las dificultades</option>
+                            @if($selectedTopicId)
+                                @foreach($this->difficulties as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
                 </div>
+
+                <!-- Información de preguntas disponibles -->
+                @if($selectedTopicId)
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-blue-800">
+                                Preguntas disponibles:
+                                <span class="font-bold">{{ $this->availableQuestionsCount }}</span>
+                                @if($selectedDifficulty)
+                                    ({{ $this->difficulties[$selectedDifficulty] }})
+                                @else
+                                    (Todas las dificultades)
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Botón Elegir -->
                 <div class="mt-6 flex justify-end">
                     <button
                         wire:click="chooseQuestions"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 @if(!$selectedTopicId) opacity-50 cursor-not-allowed @endif"
-                        @if(!$selectedTopicId) disabled @endif>
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 @if(!$selectedTopicId || $this->availableQuestionsCount == 0) opacity-50 cursor-not-allowed @endif"
+                        @if(!$selectedTopicId || $this->availableQuestionsCount == 0) disabled @endif>
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         Elegir
+                        @if($selectedTopicId && $this->availableQuestionsCount > 0)
+                            ({{ $this->availableQuestionsCount }})
+                        @endif
                     </button>
                 </div>
             </div>
@@ -151,3 +193,35 @@
         </div>
     </div>
 </div>
+
+@script
+<script>
+    $wire.on('swal:success', (event) => {
+        Swal.fire({
+            title: event[0].title,
+            text: event[0].text,
+            icon: event[0].icon,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    });
+
+    $wire.on('swal:error', (event) => {
+        Swal.fire({
+            title: event[0].title,
+            text: event[0].text,
+            icon: event[0].icon,
+            confirmButtonText: 'Entendido'
+        });
+    });
+
+    $wire.on('swal:info', (event) => {
+        Swal.fire({
+            title: event[0].title,
+            text: event[0].text,
+            icon: event[0].icon,
+            confirmButtonText: 'OK'
+        });
+    });
+</script>
+@endscript

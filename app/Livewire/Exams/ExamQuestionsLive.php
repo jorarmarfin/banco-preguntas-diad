@@ -20,6 +20,7 @@ class ExamQuestionsLive extends Component
     public $selectedSubjectId = null;
     public $selectedChapterId = null;
     public $selectedTopicId = null;
+    public $selectedDifficulty = null;
     public $showSelectForm = false;
 
     public function mount($examId)
@@ -62,6 +63,7 @@ class ExamQuestionsLive extends Component
         $this->selectedSubjectId = null;
         $this->selectedChapterId = null;
         $this->selectedTopicId = null;
+        $this->selectedDifficulty = null;
     }
 
     // Métodos para selects dependientes
@@ -69,11 +71,18 @@ class ExamQuestionsLive extends Component
     {
         $this->selectedChapterId = null;
         $this->selectedTopicId = null;
+        $this->selectedDifficulty = null;
     }
 
     public function updatedSelectedChapterId()
     {
         $this->selectedTopicId = null;
+        $this->selectedDifficulty = null;
+    }
+
+    public function updatedSelectedTopicId()
+    {
+        $this->selectedDifficulty = null;
     }
 
     public function getChaptersProperty()
@@ -97,11 +106,39 @@ class ExamQuestionsLive extends Component
             return collect();
         }
 
-        return Question::where('topic_id', $this->selectedTopicId)
+        $query = Question::where('topic_id', $this->selectedTopicId)
             ->where('status', \App\Enums\QuestionStatus::APPROVED->value)
-            ->whereNotIn('id', $this->exam->questions()->pluck('question_id'))
-            ->with(['subject', 'chapter', 'topic'])
-            ->get();
+            ->whereNotIn('id', $this->exam->questions()->pluck('question_id'));
+
+        // Filtrar por dificultad si está seleccionada
+        if ($this->selectedDifficulty) {
+            $query->where('difficulty', $this->selectedDifficulty);
+        }
+
+        return $query->with(['subject', 'chapter', 'topic'])->get();
+    }
+
+    public function getDifficultiesProperty()
+    {
+        return \App\Enums\QuestionDifficulty::toArray();
+    }
+
+    public function getAvailableQuestionsCountProperty()
+    {
+        if (!$this->selectedTopicId) {
+            return 0;
+        }
+
+        $query = Question::where('topic_id', $this->selectedTopicId)
+            ->where('status', \App\Enums\QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', $this->exam->questions()->pluck('question_id'));
+
+        // Filtrar por dificultad si está seleccionada
+        if ($this->selectedDifficulty) {
+            $query->where('difficulty', $this->selectedDifficulty);
+        }
+
+        return $query->count();
     }
 
     public function chooseQuestions()
