@@ -234,14 +234,20 @@
                                     wire:model.live="groupChapters"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId) bg-gray-100 @endif"
                                     id="group-chapters"
-                                    placeholder="1,2,3,4,5"
+                                    placeholder="1,2,3 o 1-5 o *"
                                     @if(!$selectedSubjectId) disabled @endif>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Ingrese los números de capítulos separados por comas
-                                </p>
+                                <div class="mt-1 text-xs text-gray-500 space-y-1">
+                                    <p class="flex items-start">
+                                        <svg class="w-3 h-3 mt-0.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span><strong>Ejemplos:</strong></span>
+                                    </p>
+                                    <p class="ml-4 text-green-600">• <code class="bg-green-50 px-1 rounded">1,2,3</code> - Capítulos específicos</p>
+                                    <p class="ml-4 text-blue-600">• <code class="bg-blue-50 px-1 rounded">1-5</code> - Rango del 1 al 5</p>
+                                    <p class="ml-4 text-purple-600">• <code class="bg-purple-50 px-1 rounded">1-3,7,10-15</code> - Combinado</p>
+                                    <p class="ml-4 text-orange-600">• <code class="bg-orange-50 px-1 rounded">*</code> - Todos los capítulos</p>
+                                </div>
                             </div>
 
                             <!-- Select de Dificultad -->
@@ -702,7 +708,7 @@
                                     <div>
                                         <div class="font-medium">{{ $examQuestion->question->bank->name }}</div>
                                         <div class="text-xs {{ $examQuestion->question->bank->is_active ? 'text-green-600' : 'text-red-600' }}">
-                                            {{ $examQuestion->question->bank->is_active ? 'Activo' : 'Inactivo' }}
+                                            {{ $examQuestion->question->bank->active ? 'Activo' : 'Inactivo' }}
                                         </div>
                                     </div>
                                 </td>

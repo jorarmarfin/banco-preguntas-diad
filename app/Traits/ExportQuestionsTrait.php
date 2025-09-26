@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 trait ExportQuestionsTrait
 {
@@ -61,7 +62,7 @@ trait ExportQuestionsTrait
                 ->groupBy('question.subject.code');
 
             foreach ($questionsBySubject as $subjectCode => $examQuestions) {
-                $subjectName = $examQuestions->first()->question->subject->name;
+                $subjectName = Str::of($examQuestions->first()->question->subject->name)->slug('-');
                 $subjectPath = $examPath . '/' . $subjectName;
                 $subjectPaths[] = [
                     'code' => $subjectCode,

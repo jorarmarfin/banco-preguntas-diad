@@ -141,6 +141,15 @@ trait ExamQuestionsTrait
             return 0;
         }
 
+        // Handle wildcard - get all chapters for the subject
+        if (in_array('*', $chapterCodesArray)) {
+            $chapterCodesArray = $this->getAllChapterCodesForSubject($subjectId);
+        }
+
+        if (empty($chapterCodesArray)) {
+            return 0;
+        }
+
         // Get chapter IDs from codes
         $chapterIds = \App\Models\Chapter::where('subject_id', $subjectId)
             ->whereIn('code', $chapterCodesArray)
@@ -215,7 +224,8 @@ trait ExamQuestionsTrait
     }
 
     /**
-     * Parse chapter codes from comma-separated string
+     * Parse chapter codes from comma-separated string and ranges
+     * Supports formats like: "1,2,3", "1-5", "1-3,7,10-15", "*" (all chapters)
      */
     private function parseChapterCodes($chapterCodes)
     {
@@ -223,7 +233,58 @@ trait ExamQuestionsTrait
             return [];
         }
 
-        return array_map('trim', array_filter(explode(',', $chapterCodes)));
+        $chapterCodes = trim($chapterCodes);
+
+        // Handle wildcard for all chapters (will be processed later with subject context)
+        if ($chapterCodes === '*') {
+            return ['*'];
+        }
+
+        $result = [];
+        $parts = explode(',', $chapterCodes);
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+
+            // Check if it's a range (e.g., "1-5")
+            if (strpos($part, '-') !== false) {
+                $rangeParts = explode('-', $part);
+                if (count($rangeParts) == 2) {
+                    $start = (int)trim($rangeParts[0]);
+                    $end = (int)trim($rangeParts[1]);
+
+                    // Validate range
+                    if ($start > 0 && $end > 0 && $start <= $end) {
+                        for ($i = $start; $i <= $end; $i++) {
+                            $result[] = (string)$i;
+                        }
+                    }
+                }
+            } else {
+                // Single number
+                $num = (int)trim($part);
+                if ($num > 0) {
+                    $result[] = (string)$num;
+                }
+            }
+        }
+
+        // Remove duplicates and sort
+        $result = array_unique($result);
+        sort($result, SORT_NUMERIC);
+
+        return $result;
+    }
+
+    /**
+     * Get all chapter codes for a subject
+     */
+    private function getAllChapterCodesForSubject($subjectId)
+    {
+        return \App\Models\Chapter::where('subject_id', $subjectId)
+            ->orderBy('code', 'asc')
+            ->pluck('code')
+            ->toArray();
     }
 
     /**
@@ -237,6 +298,15 @@ trait ExamQuestionsTrait
 
         // Parse chapter codes from comma-separated string
         $chapterCodesArray = $this->parseChapterCodes($chapterCodes);
+        if (empty($chapterCodesArray)) {
+            return collect();
+        }
+
+        // Handle wildcard - get all chapters for the subject
+        if (in_array('*', $chapterCodesArray)) {
+            $chapterCodesArray = $this->getAllChapterCodesForSubject($subjectId);
+        }
+
         if (empty($chapterCodesArray)) {
             return collect();
         }
