@@ -217,6 +217,96 @@ class ExamQuestionsLive extends Component
         ]);
     }
 
+    public function sortearGrupo()
+    {
+        // Validaciones
+        if (!$this->selectedSubjectId) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'Debe seleccionar una asignatura.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        if (empty($this->groupChapters)) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'Debe ingresar los códigos de capítulos.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        if (!$this->groupQuantity || $this->groupQuantity <= 0) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'Debe ingresar una cantidad válida.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        // Verificar que hay suficientes preguntas disponibles
+        $availableCount = $this->availableGroupQuestionsCount;
+        if ($availableCount == 0) {
+            $this->dispatch('swal:error', [
+                'title' => 'Sin preguntas',
+                'text' => 'No hay preguntas disponibles con los criterios seleccionados.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        if ($this->groupQuantity > $availableCount) {
+            $this->dispatch('swal:error', [
+                'title' => 'Cantidad excedida',
+                'text' => "Solo hay {$availableCount} preguntas disponibles, pero solicitas {$this->groupQuantity}.",
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        try {
+            // Obtener preguntas aleatorias usando el trait
+            $randomQuestions = $this->getRandomQuestionsByChapterCodes(
+                $this->examId,
+                $this->selectedSubjectId,
+                $this->groupChapters,
+                $this->groupQuantity,
+                $this->selectedDifficulty
+            );
+
+            if ($randomQuestions->isEmpty()) {
+                $this->dispatch('swal:error', [
+                    'title' => 'Error',
+                    'text' => 'No se pudieron obtener preguntas aleatorias.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            // Agregar todas las preguntas al examen usando inserción masiva
+            $this->addMultipleQuestionsToExam($this->examId, $randomQuestions);
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Preguntas agregadas!',
+                'text' => "Se han agregado {$randomQuestions->count()} preguntas al examen exitosamente.",
+                'icon' => 'success'
+            ]);
+
+            // Limpiar formulario
+            $this->hideSelectForm();
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No se pudieron agregar las preguntas al examen.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
     public function elegirPregunta()
     {
         if (!$this->selectedQuestion) {

@@ -315,8 +315,9 @@
                         <!-- Botón Sortear para modo grupo -->
                         <div class="mt-6 flex justify-end">
                             <button
-                                class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity) opacity-50 cursor-not-allowed @endif"
-                                @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity) disabled @endif>
+                                wire:click="sortearGrupo"
+                                class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity || $this->availableGroupQuestionsCount == 0) opacity-50 cursor-not-allowed @endif"
+                                @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity || $this->availableGroupQuestionsCount == 0) disabled @endif>
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>

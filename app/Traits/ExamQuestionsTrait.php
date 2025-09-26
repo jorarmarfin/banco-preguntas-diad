@@ -79,6 +79,25 @@ trait ExamQuestionsTrait
     }
 
     /**
+     * Add multiple questions to an exam
+     */
+    public function addMultipleQuestionsToExam($examId, $questions)
+    {
+        $examQuestions = [];
+
+        foreach ($questions as $question) {
+            $examQuestions[] = [
+                'exam_id' => $examId,
+                'question_id' => $question->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        return \App\Models\ExamQuestion::insert($examQuestions);
+    }
+
+    /**
      * Get the next order number for a question in an exam
      */
     public function getNextQuestionOrder($examId)
@@ -205,5 +224,48 @@ trait ExamQuestionsTrait
         }
 
         return array_map('trim', array_filter(explode(',', $chapterCodes)));
+    }
+
+    /**
+     * Get random questions from multiple chapters by codes
+     */
+    public function getRandomQuestionsByChapterCodes($examId, $subjectId, $chapterCodes, $quantity, $difficulty = null)
+    {
+        if (!$subjectId || empty($chapterCodes) || $quantity <= 0) {
+            return collect();
+        }
+
+        // Parse chapter codes from comma-separated string
+        $chapterCodesArray = $this->parseChapterCodes($chapterCodes);
+        if (empty($chapterCodesArray)) {
+            return collect();
+        }
+
+        // Get chapter IDs from codes
+        $chapterIds = \App\Models\Chapter::where('subject_id', $subjectId)
+            ->whereIn('code', $chapterCodesArray)
+            ->pluck('id');
+
+        if ($chapterIds->isEmpty()) {
+            return collect();
+        }
+
+        // Build query for getting questions
+        $query = Question::whereIn('chapter_id', $chapterIds)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', function ($subQuery) use ($examId) {
+                $subQuery->select('question_id')
+                    ->from('exam_questions')
+                    ->where('exam_id', $examId);
+            })
+            ->with(['subject', 'chapter', 'topic', 'bank']);
+
+        // Apply difficulty filter if specified
+        if ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        }
+
+        // Get random questions with the specified quantity
+        return $query->inRandomOrder()->limit($quantity)->get();
     }
 }
