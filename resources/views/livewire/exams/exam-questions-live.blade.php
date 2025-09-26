@@ -56,116 +56,268 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Select de Asignaturas -->
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                            Asignatura <span class="text-red-500">*</span>
-                        </label>
-                        <select
-                            wire:model.live="selectedSubjectId"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
-                            id="subject">
-                            <option value="">Seleccione una asignatura</option>
-                            @foreach($this->subjectsWithQuestions as $id => $name)
-                                <option value="{{ $id }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Select de Capítulos -->
-                    <div>
-                        <label for="chapter" class="block text-sm font-medium text-gray-700 mb-2">
-                            Capítulo <span class="text-red-500">*</span>
-                        </label>
-                        <select
-                            wire:model.live="selectedChapterId"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId) bg-gray-100 @endif"
-                            id="chapter"
-                            @if(!$selectedSubjectId) disabled @endif>
-                            <option value="">Seleccione un capítulo</option>
-                            @if($selectedSubjectId)
-                                @foreach($this->chapters as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-
-                    <!-- Select de Temas -->
-                    <div>
-                        <label for="topic" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tema <span class="text-red-500">*</span>
-                        </label>
-                        <select
-                            wire:model.live="selectedTopicId"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedChapterId) bg-gray-100 @endif"
-                            id="topic"
-                            @if(!$selectedChapterId) disabled @endif>
-                            <option value="">Seleccione un tema</option>
-                            @if($selectedChapterId)
-                                @foreach($this->topics as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-
-                    <!-- Select de Dificultad -->
-                    <div>
-                        <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-                            Dificultad
-                        </label>
-                        <select
-                            wire:model.live="selectedDifficulty"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedTopicId) bg-gray-100 @endif"
-                            id="difficulty"
-                            @if(!$selectedTopicId) disabled @endif>
-                            <option value="">Todas las dificultades</option>
-                            @if($selectedTopicId)
-                                @foreach($this->difficulties as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            @endif
-                        </select>
+                <!-- Switch para modo de selección -->
+                <div class="mb-6 flex items-center justify-center">
+                    <div class="bg-gray-100 p-1 rounded-lg inline-flex">
+                        <button
+                            wire:click="$set('selectionMode', 'individual')"
+                            class="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 @if($selectionMode === 'individual') bg-white text-blue-600 shadow-sm @else text-gray-600 hover:text-gray-800 @endif">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Pregunta Individual
+                        </button>
+                        <button
+                            wire:click="$set('selectionMode', 'group')"
+                            class="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 @if($selectionMode === 'group') bg-white text-blue-600 shadow-sm @else text-gray-600 hover:text-gray-800 @endif">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            Preguntas por Grupo
+                        </button>
                     </div>
                 </div>
 
-                <!-- Información de preguntas disponibles -->
-                @if($selectedTopicId)
-                    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m-1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-sm font-medium text-blue-800">
-                                Preguntas disponibles:
-                                <span class="font-bold">{{ $this->availableQuestionsCount }}</span>
-                                @if($selectedDifficulty)
-                                    ({{ $this->difficulties[$selectedDifficulty] }})
-                                @else
-                                    (Todas las dificultades)
-                                @endif
-                            </span>
+                <!-- Formulario para Pregunta Individual -->
+                @if($selectionMode === 'individual')
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Select de Asignaturas -->
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
+                                Asignatura <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                wire:model.live="selectedSubjectId"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
+                                id="subject">
+                                <option value="">Seleccione una asignatura</option>
+                                @foreach($this->subjectsWithQuestions as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
                         </div>
+
+                        <!-- Select de Capítulos -->
+                        <div>
+                            <label for="chapter" class="block text-sm font-medium text-gray-700 mb-2">
+                                Capítulo <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                wire:model.live="selectedChapterId"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId) bg-gray-100 @endif"
+                                id="chapter"
+                                @if(!$selectedSubjectId) disabled @endif>
+                                <option value="">Seleccione un capítulo</option>
+                                @if($selectedSubjectId)
+                                    @foreach($this->chapters as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+
+                        <!-- Select de Temas -->
+                        <div>
+                            <label for="topic" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tema <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                wire:model.live="selectedTopicId"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedChapterId) bg-gray-100 @endif"
+                                id="topic"
+                                @if(!$selectedChapterId) disabled @endif>
+                                <option value="">Seleccione un tema</option>
+                                @if($selectedChapterId)
+                                    @foreach($this->topics as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+
+                        <!-- Select de Dificultad -->
+                        <div>
+                            <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
+                                Dificultad
+                            </label>
+                            <select
+                                wire:model.live="selectedDifficulty"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm @if(!$selectedTopicId) bg-gray-100 @endif"
+                                id="difficulty"
+                                @if(!$selectedTopicId) disabled @endif>
+                                <option value="">Todas las dificultades</option>
+                                @if($selectedTopicId)
+                                    @foreach($this->difficulties as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Información de preguntas disponibles para modo individual -->
+                    @if($selectedTopicId)
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m-1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-blue-800">
+                                    Preguntas disponibles:
+                                    <span class="font-bold">{{ $this->availableQuestionsCount }}</span>
+                                    @if($selectedDifficulty)
+                                        ({{ $this->difficulties[$selectedDifficulty] }})
+                                    @else
+                                        (Todas las dificultades)
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Botón Sortear para modo individual -->
+                    <div class="mt-6 flex justify-end">
+                        <button
+                            wire:click="sortearPregunta"
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 @if(!$selectedTopicId || $this->availableQuestionsCount == 0) opacity-50 cursor-not-allowed @endif"
+                            @if(!$selectedTopicId || $this->availableQuestionsCount == 0) disabled @endif>
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h3a1 1 0 011 1v2h4a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1h1zM6 10v8a2 2 0 002 2h8a2 2 0 002-2v-8H6z"></path>
+                            </svg>
+                            Sortear
+                            @if($selectedTopicId && $this->availableQuestionsCount > 0)
+                                ({{ $this->availableQuestionsCount }})
+                            @endif
+                        </button>
                     </div>
                 @endif
 
-                <!-- Botón Sortear -->
-                <div class="mt-6 flex justify-end">
-                    <button
-                        wire:click="sortearPregunta"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 @if(!$selectedTopicId || $this->availableQuestionsCount == 0) opacity-50 cursor-not-allowed @endif"
-                        @if(!$selectedTopicId || $this->availableQuestionsCount == 0) disabled @endif>
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h3a1 1 0 011 1v2h4a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1h1zM6 10v8a2 2 0 002 2h8a2 2 0 002-2v-8H6z"></path>
-                        </svg>
-                        Sortear
-                        @if($selectedTopicId && $this->availableQuestionsCount > 0)
-                            ({{ $this->availableQuestionsCount }})
+                <!-- Formulario para Preguntas por Grupo -->
+                @if($selectionMode === 'group')
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="text-lg font-semibold text-gray-900">Selección por Grupo</h5>
+                                <p class="text-sm text-gray-600">Selecciona múltiples preguntas de varios capítulos de una vez</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <!-- Select de Asignatura -->
+                            <div>
+                                <label for="group-subject" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Asignatura <span class="text-red-500">*</span>
+                                </label>
+                                <select
+                                    wire:model.live="selectedSubjectId"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
+                                    id="group-subject">
+                                    <option value="">Seleccione una asignatura</option>
+                                    @foreach($this->subjectsWithQuestions as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Input de Capítulos -->
+                            <div>
+                                <label for="group-chapters" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Capítulos <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    wire:model="groupChapters"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId) bg-gray-100 @endif"
+                                    id="group-chapters"
+                                    placeholder="1,2,3,4,5"
+                                    @if(!$selectedSubjectId) disabled @endif>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Ingrese los números de capítulos separados por comas
+                                </p>
+                            </div>
+
+                            <!-- Input de Cantidad -->
+                            <div>
+                                <label for="group-quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Cantidad <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    wire:model="groupQuantity"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId || !$groupChapters) bg-gray-100 @endif"
+                                    id="group-quantity"
+                                    placeholder="10"
+                                    min="1"
+                                    max="100"
+                                    @if(!$selectedSubjectId || !$groupChapters) disabled @endif>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Total de preguntas a sortear
+                                </p>
+                            </div>
+
+                            <!-- Select de Dificultad -->
+                            <div>
+                                <label for="group-difficulty" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Dificultad
+                                </label>
+                                <select
+                                    wire:model.live="selectedDifficulty"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId || !$groupChapters) bg-gray-100 @endif"
+                                    id="group-difficulty"
+                                    @if(!$selectedSubjectId || !$groupChapters) disabled @endif>
+                                    <option value="">Todas las dificultades</option>
+                                    @foreach($this->difficulties as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Información de preguntas disponibles para modo grupo -->
+                        @if($selectedSubjectId && $groupChapters)
+                            <div class="mt-4 p-4 bg-green-100 rounded-lg border border-green-300">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    <span class="text-sm font-medium text-green-800">
+                                        Capítulos seleccionados: <span class="font-bold">{{ $groupChapters }}</span>
+                                        • Cantidad a sortear: <span class="font-bold">{{ $groupQuantity }}</span>
+                                        @if($selectedDifficulty)
+                                            • Dificultad: <span class="font-bold">{{ $this->difficulties[$selectedDifficulty] }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
                         @endif
-                    </button>
-                </div>
+
+                        <!-- Botón Sortear para modo grupo -->
+                        <div class="mt-6 flex justify-end">
+                            <button
+                                class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity) opacity-50 cursor-not-allowed @endif"
+                                @if(!$selectedSubjectId || !$groupChapters || !$groupQuantity) disabled @endif>
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                Sortear Grupo
+                                @if($groupQuantity > 1)
+                                    ({{ $groupQuantity }} preguntas)
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     @endif

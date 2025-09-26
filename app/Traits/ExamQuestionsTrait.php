@@ -93,6 +93,7 @@ trait ExamQuestionsTrait
     {
         return \App\Models\ExamQuestion::where('exam_id', $examId)
             ->with(['question.subject', 'question.chapter', 'question.topic', 'question.bank'])
+            ->orderBy('id', 'asc')
             ->get();
     }
 

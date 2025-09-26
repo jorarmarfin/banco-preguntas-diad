@@ -28,6 +28,11 @@ class ExamQuestionsLive extends Component
     public $selectedQuestion = null;
     public $showQuestionDetails = false;
 
+    // Propiedades para modo de selección
+    public $selectionMode = 'individual'; // 'individual' o 'group'
+    public $groupChapters = '';
+    public $groupQuantity = 1;
+
     public function mount($examId)
     {
         $this->examId = $examId;
