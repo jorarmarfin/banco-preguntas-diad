@@ -7,11 +7,12 @@ use App\Models\Question;
 use App\Traits\ExamTrait;
 use App\Traits\DdlTrait;
 use App\Traits\BankTrait;
+use App\Traits\ExamQuestionsTrait;
 use Livewire\Component;
 
 class ExamQuestionsLive extends Component
 {
-    use ExamTrait, DdlTrait, BankTrait;
+    use ExamTrait, DdlTrait, BankTrait, ExamQuestionsTrait;
 
     public $examId;
     public $exam;
@@ -22,6 +23,10 @@ class ExamQuestionsLive extends Component
     public $selectedTopicId = null;
     public $selectedDifficulty = null;
     public $showSelectForm = false;
+
+    // Propiedades para pregunta sorteada
+    public $selectedQuestion = null;
+    public $showQuestionDetails = false;
 
     public function mount($examId)
     {
@@ -102,43 +107,17 @@ class ExamQuestionsLive extends Component
 
     public function getAvailableQuestionsProperty()
     {
-        if (!$this->selectedTopicId) {
-            return collect();
-        }
-
-        $query = Question::where('topic_id', $this->selectedTopicId)
-            ->where('status', \App\Enums\QuestionStatus::APPROVED->value)
-            ->whereNotIn('id', $this->exam->questions()->pluck('question_id'));
-
-        // Filtrar por dificultad si está seleccionada
-        if ($this->selectedDifficulty) {
-            $query->where('difficulty', $this->selectedDifficulty);
-        }
-
-        return $query->with(['subject', 'chapter', 'topic'])->get();
+        return $this->getAvailableQuestions($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
     }
 
     public function getDifficultiesProperty()
     {
-        return \App\Enums\QuestionDifficulty::toArray();
+        return $this->getDifficulties();
     }
 
     public function getAvailableQuestionsCountProperty()
     {
-        if (!$this->selectedTopicId) {
-            return 0;
-        }
-
-        $query = Question::where('topic_id', $this->selectedTopicId)
-            ->where('status', \App\Enums\QuestionStatus::APPROVED->value)
-            ->whereNotIn('id', $this->exam->questions()->pluck('question_id'));
-
-        // Filtrar por dificultad si está seleccionada
-        if ($this->selectedDifficulty) {
-            $query->where('difficulty', $this->selectedDifficulty);
-        }
-
-        return $query->count();
+        return $this->countAvailableQuestions($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
     }
 
     public function chooseQuestions()
@@ -158,6 +137,90 @@ class ExamQuestionsLive extends Component
             'text' => 'Funcionalidad de selección de preguntas en desarrollo.',
             'icon' => 'info'
         ]);
+    }
+
+    public function sortearPregunta()
+    {
+        if (!$this->selectedTopicId) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'Debe seleccionar un tema.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        $availableQuestions = $this->getAvailableQuestions($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
+
+        if ($availableQuestions->isEmpty()) {
+            $this->dispatch('swal:error', [
+                'title' => 'Sin preguntas',
+                'text' => 'No hay preguntas disponibles con los criterios seleccionados.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        // Sortear una pregunta al azar
+        $this->selectedQuestion = $availableQuestions->random();
+        $this->showQuestionDetails = true;
+
+        $this->dispatch('swal:success', [
+            'title' => '¡Pregunta sorteada!',
+            'text' => 'Se ha seleccionado una pregunta al azar.',
+            'icon' => 'success'
+        ]);
+    }
+
+    public function elegirPregunta()
+    {
+        if (!$this->selectedQuestion) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay pregunta seleccionada.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        try {
+            // Verificar si la pregunta ya está en el examen usando el trait
+            if ($this->questionExistsInExam($this->examId, $this->selectedQuestion->id)) {
+                $this->dispatch('swal:error', [
+                    'title' => 'Pregunta duplicada',
+                    'text' => 'Esta pregunta ya está agregada al examen.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            // Agregar la pregunta al examen usando el trait
+            $this->addQuestionToExam($this->examId, $this->selectedQuestion->id);
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Pregunta agregada!',
+                'text' => 'La pregunta se ha agregado exitosamente al examen.',
+                'icon' => 'success'
+            ]);
+
+            // Limpiar la selección
+            $this->selectedQuestion = null;
+            $this->showQuestionDetails = false;
+            $this->hideSelectForm();
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No se pudo agregar la pregunta al examen.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function cancelarSeleccion()
+    {
+        $this->selectedQuestion = null;
+        $this->showQuestionDetails = false;
     }
 
     public function render()

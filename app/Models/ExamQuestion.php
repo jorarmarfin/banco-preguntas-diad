@@ -11,7 +11,6 @@ class ExamQuestion extends Model
     protected $fillable = [
         'exam_id',
         'question_id',
-        'position',
     ];
 
     /**

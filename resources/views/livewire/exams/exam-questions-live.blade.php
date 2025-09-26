@@ -136,7 +136,7 @@
                     <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m-1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span class="text-sm font-medium text-blue-800">
                                 Preguntas disponibles:
@@ -151,19 +151,161 @@
                     </div>
                 @endif
 
-                <!-- Botón Elegir -->
+                <!-- Botón Sortear -->
                 <div class="mt-6 flex justify-end">
                     <button
-                        wire:click="chooseQuestions"
+                        wire:click="sortearPregunta"
                         class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 @if(!$selectedTopicId || $this->availableQuestionsCount == 0) opacity-50 cursor-not-allowed @endif"
                         @if(!$selectedTopicId || $this->availableQuestionsCount == 0) disabled @endif>
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h3a1 1 0 011 1v2h4a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1h1zM6 10v8a2 2 0 002 2h8a2 2 0 002-2v-8H6z"></path>
+                        </svg>
+                        Sortear
+                        @if($selectedTopicId && $this->availableQuestionsCount > 0)
+                            ({{ $this->availableQuestionsCount }})
+                        @endif
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Detalles de la pregunta sorteada -->
+    @if($showQuestionDetails && $selectedQuestion)
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-lg font-medium text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Pregunta Sorteada
+                    </h4>
+                    <button wire:click="cancelarSeleccion" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <!-- Información de la pregunta en una sola tarjeta compacta -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="text-lg font-semibold text-gray-900">
+                                    Código:
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 ml-2">
+                                        {{ $selectedQuestion->code }}
+                                    </span>
+                                </h5>
+                                <p class="text-sm text-gray-600 mt-1">Pregunta seleccionada aleatoriamente</p>
+                            </div>
+                        </div>
+                        <!-- Estado y Dificultad en la esquina -->
+                        <div class="flex flex-col items-end space-y-2">
+                            @php
+                                $statusColors = [
+                                    'draft' => 'bg-gray-100 text-gray-800',
+                                    'approved' => 'bg-green-100 text-green-800',
+                                    'archived' => 'bg-red-100 text-red-800'
+                                ];
+                                $difficultyColors = [
+                                    'easy' => 'bg-green-100 text-green-800',
+                                    'medium' => 'bg-yellow-100 text-yellow-800',
+                                    'hard' => 'bg-red-100 text-red-800'
+                                ];
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColors[$selectedQuestion->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                {{ \App\Enums\QuestionStatus::from($selectedQuestion->status)->label() }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $difficultyColors[$selectedQuestion->difficulty] ?? 'bg-gray-100 text-gray-800' }}">
+                                {{ $this->difficulties[$selectedQuestion->difficulty] ?? $selectedQuestion->difficulty }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Grid compacto con toda la información -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Información académica -->
+                        <div class="space-y-3">
+                            <h6 class="text-sm font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-300 pb-1">
+                                Información Académica
+                            </h6>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Asignatura:</span>
+                                    <span class="font-medium text-gray-900">{{ $selectedQuestion->subject->name }} ({{ $selectedQuestion->subject->code }})</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Capítulo:</span>
+                                    <span class="font-medium text-gray-900">{{ $selectedQuestion->chapter->name }} ({{ $selectedQuestion->chapter->code }})</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tema:</span>
+                                    <span class="font-medium text-gray-900">{{ $selectedQuestion->topic->name }} ({{ $selectedQuestion->topic->code }})</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información técnica -->
+                        <div class="space-y-3">
+                            <h6 class="text-sm font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-300 pb-1">
+                                Información Técnica
+                            </h6>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Banco:</span>
+                                    <span class="font-medium text-gray-900">{{ $selectedQuestion->bank->name }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Estado Banco:</span>
+                                    <span class="font-medium {{ $selectedQuestion->bank->active ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $selectedQuestion->bank->active ? 'Activo' : 'Inactivo' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Ruta:</span>
+                                    <code class="text-xs bg-gray-100 px-2 py-1 rounded font-mono text-gray-800 max-w-xs truncate">
+                                        {{ $selectedQuestion->path }}
+                                    </code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button
+                        wire:click="cancelarSeleccion"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancelar
+                    </button>
+                    <button
+                        wire:click="sortearPregunta"
+                        class="inline-flex items-center px-4 py-2 border border-orange-300 bg-orange-50 hover:bg-orange-100 text-orange-700 text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Sortear Otra
+                    </button>
+                    <button
+                        wire:click="elegirPregunta"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         Elegir
-                        @if($selectedTopicId && $this->availableQuestionsCount > 0)
-                            ({{ $this->availableQuestionsCount }})
-                        @endif
                     </button>
                 </div>
             </div>

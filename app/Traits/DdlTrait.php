@@ -34,6 +34,14 @@ trait DdlTrait
     }
 
     /**
+     * Get difficulties for dropdown (alias for consistency)
+     */
+    public function getDifficulties(): array
+    {
+        return $this->DdlDifficultyOptions();
+    }
+
+    /**
      * Get status options for questions
      */
     public function DdlStatusOptions(): array
