@@ -5,7 +5,7 @@ namespace App\Enums;
 enum QuestionDifficulty: string
 {
     case EASY = 'easy';
-    case MEDIUM = 'medium';
+    case MEDIUM = 'normal';
     case HARD = 'hard';
 
     /**
@@ -49,8 +49,8 @@ enum QuestionDifficulty: string
             'easy' => self::EASY,
             'facil' => self::EASY,
             'fácil' => self::EASY,
-            'medium' => self::MEDIUM,
-            'medio' => self::MEDIUM,
+            'normal' => self::MEDIUM,
+            'normal' => self::MEDIUM,
             'normal' => self::MEDIUM,
             'intermedio' => self::MEDIUM,
             'hard' => self::HARD,

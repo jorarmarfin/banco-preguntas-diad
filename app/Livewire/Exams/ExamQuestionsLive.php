@@ -8,11 +8,12 @@ use App\Traits\ExamTrait;
 use App\Traits\DdlTrait;
 use App\Traits\BankTrait;
 use App\Traits\ExamQuestionsTrait;
+use App\Traits\ExportQuestionsTrait;
 use Livewire\Component;
 
 class ExamQuestionsLive extends Component
 {
-    use ExamTrait, DdlTrait, BankTrait, ExamQuestionsTrait;
+    use ExamTrait, DdlTrait, BankTrait, ExamQuestionsTrait, ExportQuestionsTrait;
 
     public $examId;
     public $exam;
@@ -501,6 +502,85 @@ class ExamQuestionsLive extends Component
             $this->dispatch('swal:error', [
                 'title' => 'Error',
                 'text' => 'Ocurrió un error al eliminar la pregunta.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function exportarPreguntas()
+    {
+        // Verificar que hay preguntas en el examen
+        if ($this->examQuestions->count() === 0) {
+            $this->dispatch('swal:error', [
+                'title' => 'Sin preguntas',
+                'text' => 'No hay preguntas en el examen para exportar.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        // Verificar que hay un período activo
+        if (!$this->hasActiveTerm()) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay un período activo configurado. Configure un período activo antes de exportar.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        try {
+            // Mostrar mensaje de procesamiento
+            $this->dispatch('swal:info', [
+                'title' => 'Exportando preguntas...',
+                'text' => 'Por favor espere mientras se exportan las preguntas físicas.',
+                'icon' => 'info'
+            ]);
+
+            // Ejecutar la exportación usando el trait
+            $result = $this->exportExamQuestions($this->examId);
+
+            if ($result['success']) {
+                $data = $result['data'];
+                $message = "Exportación completada:\n";
+                $message .= "• {$data['exported']} preguntas exportadas\n";
+
+                if ($data['skipped'] > 0) {
+                    $message .= "• {$data['skipped']} preguntas ya existían\n";
+                }
+
+                if ($data['errors'] > 0) {
+                    $message .= "• {$data['errors']} preguntas con errores\n";
+                }
+
+                $message .= "\nRuta de exportación: {$data['exam_path']}";
+
+                // Mostrar detalles por asignatura
+                if (!empty($data['subjects'])) {
+                    $message .= "\n\nPor asignatura:";
+                    foreach ($data['subjects'] as $subject) {
+                        $message .= "\n• {$subject['name']} ({$subject['code']}): {$subject['count']} preguntas";
+                    }
+                }
+
+                $this->dispatch('swal:success', [
+                    'title' => '¡Exportación exitosa!',
+                    'text' => $message,
+                    'icon' => 'success'
+                ]);
+
+            } else {
+                $this->dispatch('swal:error', [
+                    'title' => 'Error en la exportación',
+                    'text' => $result['message'],
+                    'icon' => 'error'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error inesperado',
+                'text' => 'Ocurrió un error durante la exportación: ' . $e->getMessage(),
                 'icon' => 'error'
             ]);
         }
