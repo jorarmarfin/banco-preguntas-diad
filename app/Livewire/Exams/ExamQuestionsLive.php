@@ -33,6 +33,10 @@ class ExamQuestionsLive extends Component
     public $groupChapters = '';
     public $groupQuantity = 1;
 
+    // Propiedades para preguntas sorteadas en grupo
+    public $selectedQuestions = [];
+    public $showGroupQuestions = false;
+
     public function mount($examId)
     {
         $this->examId = $examId;
@@ -268,7 +272,7 @@ class ExamQuestionsLive extends Component
         }
 
         try {
-            // Obtener preguntas aleatorias usando el trait
+            // Obtener preguntas aleatorias usando el trait (solo mostrarlas, no insertarlas)
             $randomQuestions = $this->getRandomQuestionsByChapterCodes(
                 $this->examId,
                 $this->selectedSubjectId,
@@ -286,28 +290,68 @@ class ExamQuestionsLive extends Component
                 return;
             }
 
-            // Agregar todas las preguntas al examen usando inserción masiva
-            $this->addMultipleQuestionsToExam($this->examId, $randomQuestions);
+            // Mostrar las preguntas sorteadas para que el usuario decida
+            $this->selectedQuestions = $randomQuestions->toArray();
+            $this->showGroupQuestions = true;
 
             $this->dispatch('swal:success', [
-                'title' => '¡Preguntas agregadas!',
-                'text' => "Se han agregado {$randomQuestions->count()} preguntas al examen exitosamente.",
+                'title' => '¡Preguntas sorteadas!',
+                'text' => "Se han sorteado {$randomQuestions->count()} preguntas. Revisa y decide cuáles agregar.",
                 'icon' => 'success'
             ]);
-
-            // Limpiar formulario
-            $this->hideSelectForm();
 
         } catch (\Exception $e) {
             $this->dispatch('swal:error', [
                 'title' => 'Error',
-                'text' => 'No se pudieron agregar las preguntas al examen.',
+                'text' => 'No se pudieron sortear las preguntas.',
                 'icon' => 'error'
             ]);
         }
     }
 
-    public function elegirPregunta()
+    public function agregarPreguntaIndividual($questionId)
+    {
+        try {
+            // Verificar si la pregunta ya está en el examen
+            if ($this->questionExistsInExam($this->examId, $questionId)) {
+                $this->dispatch('swal:error', [
+                    'title' => 'Pregunta duplicada',
+                    'text' => 'Esta pregunta ya está agregada al examen.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            // Agregar la pregunta al examen
+            $this->addQuestionToExam($this->examId, $questionId);
+
+            // Remover la pregunta de la lista de sorteadas
+            $this->selectedQuestions = array_filter($this->selectedQuestions, function($question) use ($questionId) {
+                return $question['id'] !== $questionId;
+            });
+
+            // Si no quedan preguntas, ocultar la vista
+            if (empty($this->selectedQuestions)) {
+                $this->showGroupQuestions = false;
+                $this->hideSelectForm();
+            }
+
+            $this->dispatch('swal:success', [
+                'title' => '¡Pregunta agregada!',
+                'text' => 'La pregunta se ha agregado al examen.',
+                'icon' => 'success'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No se pudo agregar la pregunta.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function agregarPregunta()
     {
         if (!$this->selectedQuestion) {
             $this->dispatch('swal:error', [
@@ -319,7 +363,7 @@ class ExamQuestionsLive extends Component
         }
 
         try {
-            // Verificar si la pregunta ya está en el examen usando el trait
+            // Verificar si la pregunta ya está en el examen
             if ($this->questionExistsInExam($this->examId, $this->selectedQuestion->id)) {
                 $this->dispatch('swal:error', [
                     'title' => 'Pregunta duplicada',
@@ -329,19 +373,17 @@ class ExamQuestionsLive extends Component
                 return;
             }
 
-            // Agregar la pregunta al examen usando el trait
+            // Agregar la pregunta al examen
             $this->addQuestionToExam($this->examId, $this->selectedQuestion->id);
 
             $this->dispatch('swal:success', [
                 'title' => '¡Pregunta agregada!',
-                'text' => 'La pregunta se ha agregado exitosamente al examen.',
+                'text' => 'La pregunta se ha agregado al examen correctamente.',
                 'icon' => 'success'
             ]);
 
-            // Limpiar la selección
-            $this->selectedQuestion = null;
-            $this->showQuestionDetails = false;
-            $this->hideSelectForm();
+            // Limpiar selección
+            $this->cancelarSeleccion();
 
         } catch (\Exception $e) {
             $this->dispatch('swal:error', [
@@ -356,6 +398,74 @@ class ExamQuestionsLive extends Component
     {
         $this->selectedQuestion = null;
         $this->showQuestionDetails = false;
+    }
+
+    public function guardarTodasLasPreguntas()
+    {
+        if (empty($this->selectedQuestions)) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No hay preguntas para guardar.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        try {
+            $questionsToAdd = [];
+            $duplicatedCount = 0;
+
+            // Verificar duplicados y preparar lista
+            foreach ($this->selectedQuestions as $question) {
+                if (!$this->questionExistsInExam($this->examId, $question['id'])) {
+                    $questionsToAdd[] = (object)$question;
+                } else {
+                    $duplicatedCount++;
+                }
+            }
+
+            if (!empty($questionsToAdd)) {
+                // Agregar todas las preguntas válidas
+                $this->addMultipleQuestionsToExam($this->examId, collect($questionsToAdd));
+
+                $addedCount = count($questionsToAdd);
+                $message = "Se han agregado {$addedCount} preguntas al examen.";
+
+                if ($duplicatedCount > 0) {
+                    $message .= " ({$duplicatedCount} ya existían)";
+                }
+
+                $this->dispatch('swal:success', [
+                    'title' => '¡Preguntas guardadas!',
+                    'text' => $message,
+                    'icon' => 'success'
+                ]);
+            } else {
+                $this->dispatch('swal:info', [
+                    'title' => 'Sin cambios',
+                    'text' => 'Todas las preguntas ya estaban en el examen.',
+                    'icon' => 'info'
+                ]);
+            }
+
+            // Limpiar y cerrar
+            $this->selectedQuestions = [];
+            $this->showGroupQuestions = false;
+            $this->hideSelectForm();
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'No se pudieron guardar las preguntas.',
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function cancelarGrupo()
+    {
+        $this->selectedQuestions = [];
+        $this->showGroupQuestions = false;
     }
 
     public function confirmDeleteQuestion($questionId)
