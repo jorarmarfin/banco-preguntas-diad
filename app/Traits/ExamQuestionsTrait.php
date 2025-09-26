@@ -268,4 +268,61 @@ trait ExamQuestionsTrait
         // Get random questions with the specified quantity
         return $query->inRandomOrder()->limit($quantity)->get();
     }
+
+    /**
+     * Get a single random question optimized for large datasets
+     */
+    public function getRandomQuestion($examId, $topicId, $difficulty = null)
+    {
+        if (!$topicId) {
+            return null;
+        }
+
+        $query = Question::where('topic_id', $topicId)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', function ($subQuery) use ($examId) {
+                $subQuery->select('question_id')
+                    ->from('exam_questions')
+                    ->where('exam_id', $examId);
+            });
+
+        // Filtrar por dificultad si está seleccionada
+        if ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        }
+
+        // Usar inRandomOrder()->first() que es más eficiente para obtener solo 1 registro
+        return $query->with(['subject', 'chapter', 'topic', 'bank'])
+                    ->inRandomOrder()
+                    ->first();
+    }
+
+    /**
+     * Get multiple random questions optimized for large datasets
+     */
+    public function getRandomQuestions($examId, $topicId, $quantity, $difficulty = null)
+    {
+        if (!$topicId || $quantity <= 0) {
+            return collect();
+        }
+
+        $query = Question::where('topic_id', $topicId)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', function ($subQuery) use ($examId) {
+                $subQuery->select('question_id')
+                    ->from('exam_questions')
+                    ->where('exam_id', $examId);
+            });
+
+        // Filtrar por dificultad si está seleccionada
+        if ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        }
+
+        // Usar inRandomOrder()->limit() que es más eficiente que traer todo y luego filtrar
+        return $query->with(['subject', 'chapter', 'topic', 'bank'])
+                    ->inRandomOrder()
+                    ->limit($quantity)
+                    ->get();
+    }
 }

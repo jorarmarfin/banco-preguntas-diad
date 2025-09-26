@@ -198,9 +198,10 @@ class ExamQuestionsLive extends Component
             return;
         }
 
-        $availableQuestions = $this->getAvailableQuestions($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
+        // Usar el método optimizado que obtiene solo 1 pregunta aleatoria desde la DB
+        $randomQuestion = $this->getRandomQuestion($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
 
-        if ($availableQuestions->isEmpty()) {
+        if (!$randomQuestion) {
             $this->dispatch('swal:error', [
                 'title' => 'Sin preguntas aprobadas',
                 'text' => 'No hay preguntas aprobadas disponibles con los criterios seleccionados.',
@@ -209,8 +210,8 @@ class ExamQuestionsLive extends Component
             return;
         }
 
-        // Sortear una pregunta al azar (ya filtrada por estado approved)
-        $this->selectedQuestion = $availableQuestions->random();
+        // Asignar la pregunta sorteada directamente
+        $this->selectedQuestion = $randomQuestion;
         $this->showQuestionDetails = true;
 
         $this->dispatch('swal:success', [
