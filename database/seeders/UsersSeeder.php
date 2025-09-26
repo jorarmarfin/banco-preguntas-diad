@@ -23,7 +23,17 @@ class UsersSeeder extends Seeder
         User::Create([
             'name'=>'Jesus Zapana',
             'email'=>'jzapana@gmail.com',
-            'password' => Hash::make('123456789')
+            'password' => Hash::make('40269628')
+        ])->assignRole('System');
+        User::Create([
+            'name'=>'Diego Davila',
+            'email'=>'diegostd99@gmail.com',
+            'password' => Hash::make('71982587')
+        ])->assignRole('System');
+        User::Create([
+            'name'=>'Mitchel Ugarte',
+            'email'=>'gerardo.ugarte.m@uni.edu.pe',
+            'password' => Hash::make('46520194')
         ])->assignRole('System');
         User::Create([
             'name'=>'Mario Garayar',
