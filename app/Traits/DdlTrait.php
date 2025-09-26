@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Subject;
 use App\Models\SubjectCategories;
 use App\Models\Term;
+use App\Models\Question;
 use App\Enums\QuestionDifficulty;
 use App\Enums\QuestionStatus;
 use Illuminate\Database\Eloquent\Collection;
@@ -43,5 +44,58 @@ trait DdlTrait
     public function DdlSubjects()
     {
         return Subject::select('id', 'name')->orderBy('name')->pluck('name', 'id');
+    }
+
+    /**
+     * Get subjects that have approved questions
+     */
+    public function DdlSubjectsWithQuestions()
+    {
+        return Subject::whereHas('questions', function ($query) {
+            $query->where('status', QuestionStatus::APPROVED->value);
+        })->select('id', 'name', 'code')
+        ->orderBy('name')
+        ->get()
+        ->mapWithKeys(function ($subject) {
+            return [$subject->id => $subject->name . ' (' . $subject->code . ')'];
+        });
+    }
+
+    /**
+     * Get chapters that have approved questions for a specific subject
+     */
+    public function DdlChaptersWithQuestions($subjectId)
+    {
+        if (!$subjectId) return collect();
+
+        return Question::where('subject_id', $subjectId)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->with('chapter')
+            ->get()
+            ->pluck('chapter')
+            ->unique('id')
+            ->sortBy('name')
+            ->mapWithKeys(function ($chapter) {
+                return [$chapter->id => $chapter->name];
+            });
+    }
+
+    /**
+     * Get topics that have approved questions for a specific chapter
+     */
+    public function DdlTopicsWithQuestions($chapterId)
+    {
+        if (!$chapterId) return collect();
+
+        return Question::where('chapter_id', $chapterId)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->with('topic')
+            ->get()
+            ->pluck('topic')
+            ->unique('id')
+            ->sortBy('name')
+            ->mapWithKeys(function ($topic) {
+                return [$topic->id => $topic->name];
+            });
     }
 }
