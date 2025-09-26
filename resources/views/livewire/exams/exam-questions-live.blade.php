@@ -231,7 +231,7 @@
                                 </label>
                                 <input
                                     type="text"
-                                    wire:model="groupChapters"
+                                    wire:model.live="groupChapters"
                                     class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId) bg-gray-100 @endif"
                                     id="group-chapters"
                                     placeholder="1,2,3,4,5"
@@ -244,7 +244,24 @@
                                 </p>
                             </div>
 
-                            <!-- Input de Cantidad -->
+                            <!-- Select de Dificultad -->
+                            <div>
+                                <label for="group-difficulty" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Dificultad
+                                </label>
+                                <select
+                                    wire:model.live="selectedDifficulty"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId || !$groupChapters) bg-gray-100 @endif"
+                                    id="group-difficulty"
+                                    @if(!$selectedSubjectId || !$groupChapters) disabled @endif>
+                                    <option value="">Todas las dificultades</option>
+                                    @foreach($this->difficulties as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Input de Cantidad (último campo) -->
                             <div>
                                 <label for="group-quantity" class="block text-sm font-medium text-gray-700 mb-2">
                                     Cantidad <span class="text-red-500">*</span>
@@ -266,22 +283,7 @@
                                 </p>
                             </div>
 
-                            <!-- Select de Dificultad -->
-                            <div>
-                                <label for="group-difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Dificultad
-                                </label>
-                                <select
-                                    wire:model.live="selectedDifficulty"
-                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm @if(!$selectedSubjectId || !$groupChapters) bg-gray-100 @endif"
-                                    id="group-difficulty"
-                                    @if(!$selectedSubjectId || !$groupChapters) disabled @endif>
-                                    <option value="">Todas las dificultades</option>
-                                    @foreach($this->difficulties as $value => $label)
-                                        <option value="{{ $value }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+
                         </div>
 
                         <!-- Información de preguntas disponibles para modo grupo -->
@@ -292,13 +294,21 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
                                     <span class="text-sm font-medium text-green-800">
-                                        Capítulos seleccionados: <span class="font-bold">{{ $groupChapters }}</span>
-                                        • Cantidad a sortear: <span class="font-bold">{{ $groupQuantity }}</span>
-                                        @if($selectedDifficulty)
-                                            • Dificultad: <span class="font-bold">{{ $this->difficulties[$selectedDifficulty] }}</span>
-                                        @endif
+                                        <span class="font-bold text-lg">{{ $this->availableGroupQuestionsCount }}</span> preguntas disponibles
                                     </span>
                                 </div>
+                                @if($this->availableGroupQuestionsCount > 0 && $groupQuantity > $this->availableGroupQuestionsCount)
+                                    <div class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-md">
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            </svg>
+                                            <span class="text-sm text-yellow-800">
+                                                ⚠️ La cantidad solicitada (<strong>{{ $groupQuantity }}</strong>) excede las preguntas disponibles (<strong>{{ $this->availableGroupQuestionsCount }}</strong>)
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         @endif
 

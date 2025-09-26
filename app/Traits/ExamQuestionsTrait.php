@@ -106,4 +106,104 @@ trait ExamQuestionsTrait
             ->where('question_id', $questionId)
             ->delete();
     }
+
+    /**
+     * Get available questions count for multiple chapters by codes
+     */
+    public function countAvailableQuestionsByChapterCodes($examId, $subjectId, $chapterCodes, $difficulty = null)
+    {
+        if (!$subjectId || empty($chapterCodes)) {
+            return 0;
+        }
+
+        // Parse chapter codes from comma-separated string
+        $chapterCodesArray = $this->parseChapterCodes($chapterCodes);
+        if (empty($chapterCodesArray)) {
+            return 0;
+        }
+
+        // Get chapter IDs from codes
+        $chapterIds = \App\Models\Chapter::where('subject_id', $subjectId)
+            ->whereIn('code', $chapterCodesArray)
+            ->pluck('id');
+
+        if ($chapterIds->isEmpty()) {
+            return 0;
+        }
+
+        // Build query for counting questions
+        $query = Question::whereIn('chapter_id', $chapterIds)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', function ($subQuery) use ($examId) {
+                $subQuery->select('question_id')
+                    ->from('exam_questions')
+                    ->where('exam_id', $examId);
+            });
+
+        // Apply difficulty filter if specified
+        if ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get available questions for multiple chapters by codes
+     */
+    public function getAvailableQuestionsByChapterCodes($examId, $subjectId, $chapterCodes, $difficulty = null, $limit = null)
+    {
+        if (!$subjectId || empty($chapterCodes)) {
+            return collect();
+        }
+
+        // Parse chapter codes from comma-separated string
+        $chapterCodesArray = $this->parseChapterCodes($chapterCodes);
+        if (empty($chapterCodesArray)) {
+            return collect();
+        }
+
+        // Get chapter IDs from codes
+        $chapterIds = \App\Models\Chapter::where('subject_id', $subjectId)
+            ->whereIn('code', $chapterCodesArray)
+            ->pluck('id');
+
+        if ($chapterIds->isEmpty()) {
+            return collect();
+        }
+
+        // Build query for getting questions
+        $query = Question::whereIn('chapter_id', $chapterIds)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->whereNotIn('id', function ($subQuery) use ($examId) {
+                $subQuery->select('question_id')
+                    ->from('exam_questions')
+                    ->where('exam_id', $examId);
+            })
+            ->with(['subject', 'chapter', 'topic', 'bank']);
+
+        // Apply difficulty filter if specified
+        if ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        }
+
+        // Apply limit if specified
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Parse chapter codes from comma-separated string
+     */
+    private function parseChapterCodes($chapterCodes)
+    {
+        if (empty($chapterCodes)) {
+            return [];
+        }
+
+        return array_map('trim', array_filter(explode(',', $chapterCodes)));
+    }
 }

@@ -130,6 +130,41 @@ class ExamQuestionsLive extends Component
         return $this->getExamQuestions($this->examId);
     }
 
+    public function getAvailableGroupQuestionsCountProperty()
+    {
+        if ($this->selectionMode !== 'group' || !$this->selectedSubjectId || empty($this->groupChapters)) {
+            return 0;
+        }
+
+        return $this->countAvailableQuestionsByChapterCodes(
+            $this->examId,
+            $this->selectedSubjectId,
+            $this->groupChapters,
+            $this->selectedDifficulty
+        );
+    }
+
+    // Método para resetear valores cuando cambia el modo de selección
+    public function updatedSelectionMode()
+    {
+        $this->selectedSubjectId = null;
+        $this->selectedChapterId = null;
+        $this->selectedTopicId = null;
+        $this->selectedDifficulty = null;
+        $this->groupChapters = '';
+        $this->groupQuantity = 1;
+    }
+
+    // Método para resetear en modo grupo cuando cambia la asignatura
+    public function updatedSelectedSubjectIdForGroup()
+    {
+        if ($this->selectionMode === 'group') {
+            $this->selectedDifficulty = null;
+            $this->groupChapters = '';
+            $this->groupQuantity = 1;
+        }
+    }
+
     public function chooseQuestions()
     {
         if (!$this->selectedTopicId) {
