@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -34,20 +34,20 @@ trait ExportQuestionsTrait
                 ];
             }
 
-            // Crear la estructura de directorios de destino
-            $basePath = storage_path(\App\Models\Setting::where('key', 'path_exam_export')->value('value') ?? 'app/private/exam');
+            // Crear la estructura de directorios de destino usando Storage
+            $basePath = \App\Models\Setting::where('key', 'path_exams')->value('value') ?? 'private/exams';
             $termPath = $basePath . '/' . $activeTerm->code;
             $examPath = $termPath . '/' . $exam->code;
 
-            // Crear directorios si no existen
-            if (!File::exists($basePath)) {
-                File::makeDirectory($basePath, 0755, true);
+            // Crear directorios si no existen usando Storage
+            if (!Storage::exists($basePath)) {
+                Storage::makeDirectory($basePath);
             }
-            if (!File::exists($termPath)) {
-                File::makeDirectory($termPath, 0755, true);
+            if (!Storage::exists($termPath)) {
+                Storage::makeDirectory($termPath);
             }
-            if (!File::exists($examPath)) {
-                File::makeDirectory($examPath, 0755, true);
+            if (!Storage::exists($examPath)) {
+                Storage::makeDirectory($examPath);
             }
 
             $exportedCount = 0;
@@ -72,18 +72,17 @@ trait ExportQuestionsTrait
                 ];
 
                 // Crear directorio de asignatura si no existe
-                if (!File::exists($subjectPath)) {
-                    File::makeDirectory($subjectPath, 0755, true);
+                if (!Storage::exists($subjectPath)) {
+                    Storage::makeDirectory($subjectPath);
                 }
 
                 foreach ($examQuestions as $examQuestion) {
                     $question = $examQuestion->question;
 
-                    // Construir la ruta de origen basada en el path de la pregunta
-                    $sourcePath = storage_path(\App\Models\Setting::where('key', 'path_questions_storage')->value('value') ?? 'app/public') . '/' . $question->path;
-
+                    // Construir la ruta de origen basada en el path de la pregunta usando Storage
+                    $sourcePath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
                     // Verificar si la carpeta de origen existe
-                    if (!File::exists($sourcePath) || !File::isDirectory($sourcePath)) {
+                    if (!Storage::exists($sourcePath) || !Storage::directoryExists($sourcePath)) {
                         Log::warning("Carpeta de pregunta no encontrada: {$sourcePath}");
                         $errorCount++;
                         continue;
@@ -93,14 +92,14 @@ trait ExportQuestionsTrait
                     $destinationPath = $subjectPath . '/' . $question->code;
 
                     // Verificar si ya existe en destino
-                    if (File::exists($destinationPath)) {
+                    if (Storage::exists($destinationPath)) {
                         Log::info("Pregunta ya exportada: {$question->code}");
                         $skippedCount++;
                         continue;
                     }
 
-                    // Copiar la carpeta completa de la pregunta
-                    if ($this->copyDirectory($sourcePath, $destinationPath)) {
+                    // Copiar la carpeta completa de la pregunta usando Storage
+                    if ($this->copyDirectoryWithStorage($sourcePath, $destinationPath)) {
                         $exportedCount++;
                         Log::info("Pregunta exportada exitosamente: {$question->code}");
                     } else {
@@ -133,40 +132,42 @@ trait ExportQuestionsTrait
     }
 
     /**
-     * Copiar directorio recursivamente
+     * Copiar directorio recursivamente usando Storage
      */
-    private function copyDirectory($source, $destination)
+    private function copyDirectoryWithStorage($sourcePath, $destinationPath)
     {
         try {
-            if (!File::exists($source) || !File::isDirectory($source)) {
+            if (!Storage::exists($sourcePath) || !Storage::directoryExists($sourcePath)) {
                 return false;
             }
 
             // Crear directorio de destino
-            File::makeDirectory($destination, 0755, true);
-
-            // Obtener todos los archivos y directorios
-            $items = File::allFiles($source);
-            $directories = File::directories($source);
-
-            // Copiar directorios
-            foreach ($directories as $dir) {
-                $relativePath = str_replace($source, '', $dir);
-                $newDir = $destination . $relativePath;
-                File::makeDirectory($newDir, 0755, true);
+            if (!Storage::exists($destinationPath)) {
+                Storage::makeDirectory($destinationPath);
             }
 
-            // Copiar archivos
-            foreach ($items as $file) {
-                $relativePath = str_replace($source, '', $file->getPathname());
-                $newFile = $destination . $relativePath;
-                File::copy($file->getPathname(), $newFile);
+            // Obtener todos los archivos del directorio origen
+            $files = Storage::allFiles($sourcePath);
+
+            // Copiar cada archivo
+            foreach ($files as $file) {
+                $relativePath = str_replace($sourcePath . '/', '', $file);
+                $destinationFile = $destinationPath . '/' . $relativePath;
+
+                // Crear subdirectorios si es necesario
+                $subdirectory = dirname($destinationFile);
+                if ($subdirectory !== $destinationPath && !Storage::exists($subdirectory)) {
+                    Storage::makeDirectory($subdirectory);
+                }
+
+                // Copiar el archivo
+                Storage::copy($file, $destinationFile);
             }
 
             return true;
 
         } catch (\Exception $e) {
-            Log::error('Error copiando directorio: ' . $e->getMessage());
+            Log::error('Error copiando directorio con Storage: ' . $e->getMessage());
             return false;
         }
     }
@@ -187,14 +188,14 @@ trait ExportQuestionsTrait
                 return null;
             }
 
-            $basePath = storage_path(\App\Models\Setting::where('key', 'path_exam_export')->value('value') ?? 'app/private/exam');
+            $basePath = \App\Models\Setting::where('key', 'path_exams')->value('value') ?? 'private/exams';
             $examPath = $basePath . '/' . $activeTerm->code . '/' . $exam->code;
 
             return [
                 'exam_code' => $exam->code,
                 'term_code' => $activeTerm->code,
                 'export_path' => $examPath,
-                'exists' => File::exists($examPath),
+                'exists' => Storage::exists($examPath),
                 'questions_count' => $exam->questions()->count()
             ];
 

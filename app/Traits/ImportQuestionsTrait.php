@@ -33,15 +33,15 @@ trait ImportQuestionsTrait
             }
 
             // Validar que existe la carpeta de importación (donde están las carpetas de preguntas)
-            $importBasePath = \App\Models\Setting::where('key', 'path_import_base')->value('value') ?? 'import';
+            $importBasePath = \App\Models\Setting::where('key', 'path_imports')->value('value') ?? 'imports';
             $importPath = "{$importBasePath}/{$folderName}";
             if (!Storage::exists($importPath)) {
-                throw new Exception("No se encontró la carpeta de importación: {$folderName}");
+                throw new Exception("No se encontró la carpeta de importación: {$importPath}");
             }
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $banksBasePath = \App\Models\Setting::where('key', 'path_banks_base')->value('value') ?? 'banks';
+            $banksBasePath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
             $destinationPath = "{$banksBasePath}/{$activeBank->folder_slug}/{$subjectSlug}";
 
             // Leer el archivo CSV subido por la plataforma
@@ -230,7 +230,7 @@ trait ImportQuestionsTrait
             }
 
             // Validar que existe la carpeta de importación
-            $importBanksPath = \App\Models\Setting::where('key', 'path_import_banks')->value('value') ?? 'private/import/banks';
+            $importBanksPath = \App\Models\Setting::where('key', 'path_imports')->value('value') ?? 'private/imports';
             $importPath = "{$importBanksPath}/{$folderPath}";
             if (!Storage::exists($importPath)) {
                 throw new Exception("No se encontró la carpeta de importación: {$folderPath}");
@@ -238,7 +238,7 @@ trait ImportQuestionsTrait
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $privateBanksPath = \App\Models\Setting::where('key', 'path_private_banks')->value('value') ?? 'private/banks';
+            $privateBanksPath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
             $destinationPath = "{$privateBanksPath}/{$activeBank->folder_slug}/{$subjectSlug}";
 
             $imported = 0;

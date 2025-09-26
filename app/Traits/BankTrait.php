@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Bank;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 trait BankTrait
@@ -105,10 +107,11 @@ trait BankTrait
     public function createBankFolder($bankName)
     {
         $folderName = Str::slug($bankName);
-        $folderPath = storage_path('app/private/banks/' . $folderName);
+        $banksPath = Setting::where('key','path_banks')->value('value') ?? 'private/banks';
+        $folderPath = $banksPath . '/' . $folderName;
 
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0755, true);
+        if (!Storage::exists($folderPath)) {
+            Storage::makeDirectory($folderPath);
         }
 
         return $folderName;
@@ -123,16 +126,18 @@ trait BankTrait
             return ['success' => false, 'message' => 'Nombre de carpeta vacío'];
         }
 
-        $folderPath = storage_path('app/private/banks/' . $folderName);
+        $banksPath = Setting::where('key','path_banks')->value('value') ?? 'private/banks';
+        $folderPath = $banksPath . '/' . $folderName;
 
-        if (!file_exists($folderPath) || !is_dir($folderPath)) {
+        if (!Storage::exists($folderPath)) {
             return ['success' => true, 'message' => 'La carpeta no existe'];
         }
 
         // Verificar si la carpeta está vacía
-        $files = array_diff(scandir($folderPath), ['.', '..']);
+        $files = Storage::files($folderPath);
+        $directories = Storage::directories($folderPath);
 
-        if (!empty($files)) {
+        if (!empty($files) || !empty($directories)) {
             return [
                 'success' => false,
                 'message' => 'La carpeta contiene archivos y no puede ser eliminada automáticamente. Debe ser manipulada manualmente.',
@@ -141,7 +146,7 @@ trait BankTrait
         }
 
         // Si está vacía, eliminar la carpeta
-        if (rmdir($folderPath)) {
+        if (Storage::deleteDirectory($folderPath)) {
             return ['success' => true, 'message' => 'Carpeta eliminada correctamente'];
         }
 
@@ -159,12 +164,13 @@ trait BankTrait
             return $newSlug; // No hay cambios
         }
 
-        $oldPath = storage_path('app/private/' . $oldSlug);
-        $newPath = storage_path('app/private/' . $newSlug);
+        $banksPath = Setting::getValue('path_banks', 'private/banks');
+        $oldPath = $banksPath . '/' . $oldSlug;
+        $newPath = $banksPath . '/' . $newSlug;
 
         // Si la carpeta antigua existe, renombrarla
-        if (file_exists($oldPath) && is_dir($oldPath)) {
-            if (rename($oldPath, $newPath)) {
+        if (Storage::exists($oldPath)) {
+            if (Storage::move($oldPath, $newPath)) {
                 return $newSlug;
             }
         } else {
@@ -185,24 +191,14 @@ trait BankTrait
             return 0;
         }
 
-        $folderPath = storage_path('app/private/banks' . $folderSlug);
+        $banksPath = Setting::where('key','path_banks')->value('value') ?? 'private/banks';
+        $folderPath = $banksPath . '/' . $folderSlug;
 
-        if (!file_exists($folderPath) || !is_dir($folderPath)) {
+        if (!Storage::exists($folderPath)) {
             return 0;
         }
 
-        $items = scandir($folderPath);
-        $folderCount = 0;
-
-        foreach ($items as $item) {
-            if ($item !== '.' && $item !== '..') {
-                $itemPath = $folderPath . '/' . $item;
-                if (is_dir($itemPath)) {
-                    $folderCount++;
-                }
-            }
-        }
-
-        return $folderCount;
+        $directories = Storage::directories($folderPath);
+        return count($directories);
     }
 }

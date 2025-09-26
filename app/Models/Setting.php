@@ -10,3 +10,4 @@ class Setting extends Model
     protected $fillable = ['key', 'value'];
     public $timestamps = false;
 }
+
