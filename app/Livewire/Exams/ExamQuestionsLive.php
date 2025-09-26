@@ -202,20 +202,20 @@ class ExamQuestionsLive extends Component
 
         if ($availableQuestions->isEmpty()) {
             $this->dispatch('swal:error', [
-                'title' => 'Sin preguntas',
-                'text' => 'No hay preguntas disponibles con los criterios seleccionados.',
+                'title' => 'Sin preguntas aprobadas',
+                'text' => 'No hay preguntas aprobadas disponibles con los criterios seleccionados.',
                 'icon' => 'error'
             ]);
             return;
         }
 
-        // Sortear una pregunta al azar
+        // Sortear una pregunta al azar (ya filtrada por estado approved)
         $this->selectedQuestion = $availableQuestions->random();
         $this->showQuestionDetails = true;
 
         $this->dispatch('swal:success', [
             'title' => '¡Pregunta sorteada!',
-            'text' => 'Se ha seleccionado una pregunta al azar.',
+            'text' => 'Se ha seleccionado una pregunta aprobada al azar.',
             'icon' => 'success'
         ]);
     }
@@ -254,8 +254,8 @@ class ExamQuestionsLive extends Component
         $availableCount = $this->availableGroupQuestionsCount;
         if ($availableCount == 0) {
             $this->dispatch('swal:error', [
-                'title' => 'Sin preguntas',
-                'text' => 'No hay preguntas disponibles con los criterios seleccionados.',
+                'title' => 'Sin preguntas aprobadas',
+                'text' => 'No hay preguntas aprobadas disponibles con los criterios seleccionados.',
                 'icon' => 'error'
             ]);
             return;
@@ -264,14 +264,14 @@ class ExamQuestionsLive extends Component
         if ($this->groupQuantity > $availableCount) {
             $this->dispatch('swal:error', [
                 'title' => 'Cantidad excedida',
-                'text' => "Solo hay {$availableCount} preguntas disponibles, pero solicitas {$this->groupQuantity}.",
+                'text' => "Solo hay {$availableCount} preguntas aprobadas disponibles, pero solicitas {$this->groupQuantity}.",
                 'icon' => 'error'
             ]);
             return;
         }
 
         try {
-            // Obtener preguntas aleatorias usando el trait (solo mostrarlas, no insertarlas)
+            // Obtener preguntas aleatorias usando el trait (solo preguntas aprobadas)
             $randomQuestions = $this->getRandomQuestionsByChapterCodes(
                 $this->examId,
                 $this->selectedSubjectId,
@@ -283,7 +283,7 @@ class ExamQuestionsLive extends Component
             if ($randomQuestions->isEmpty()) {
                 $this->dispatch('swal:error', [
                     'title' => 'Error',
-                    'text' => 'No se pudieron obtener preguntas aleatorias.',
+                    'text' => 'No se pudieron obtener preguntas aprobadas aleatorias.',
                     'icon' => 'error'
                 ]);
                 return;
@@ -295,7 +295,7 @@ class ExamQuestionsLive extends Component
 
             $this->dispatch('swal:success', [
                 'title' => '¡Preguntas sorteadas!',
-                'text' => "Se han sorteado {$randomQuestions->count()} preguntas. Revisa y decide cuáles agregar.",
+                'text' => "Se han sorteado {$randomQuestions->count()} preguntas aprobadas. Revisa y decide cuáles agregar.",
                 'icon' => 'success'
             ]);
 

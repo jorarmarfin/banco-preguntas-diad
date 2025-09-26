@@ -15,7 +15,7 @@ enum QuestionDifficulty: string
     {
         return match($this) {
             self::EASY => 'Fácil',
-            self::MEDIUM => 'Medio',
+            self::MEDIUM => 'Normal',
             self::HARD => 'Difícil',
         };
     }
