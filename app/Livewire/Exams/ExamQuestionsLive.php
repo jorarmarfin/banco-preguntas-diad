@@ -120,6 +120,11 @@ class ExamQuestionsLive extends Component
         return $this->countAvailableQuestions($this->examId, $this->selectedTopicId, $this->selectedDifficulty);
     }
 
+    public function getExamQuestionsProperty()
+    {
+        return $this->getExamQuestions($this->examId);
+    }
+
     public function chooseQuestions()
     {
         if (!$this->selectedTopicId) {
@@ -221,6 +226,44 @@ class ExamQuestionsLive extends Component
     {
         $this->selectedQuestion = null;
         $this->showQuestionDetails = false;
+    }
+
+    public function confirmDeleteQuestion($questionId)
+    {
+        $this->dispatch('swal:confirm', [
+            'title' => '¿Estás seguro?',
+            'text' => 'Esta pregunta será eliminada del examen.',
+            'icon' => 'warning',
+            'confirmButtonText' => 'Sí, eliminar',
+            'cancelButtonText' => 'Cancelar',
+            'method' => 'deleteQuestion',
+            'params' => $questionId
+        ]);
+    }
+
+    public function deleteQuestion($questionId)
+    {
+        try {
+            if ($this->removeQuestionFromExam($this->examId, $questionId)) {
+                $this->dispatch('swal:success', [
+                    'title' => '¡Pregunta eliminada!',
+                    'text' => 'La pregunta se ha eliminado del examen.',
+                    'icon' => 'success'
+                ]);
+            } else {
+                $this->dispatch('swal:error', [
+                    'title' => 'Error',
+                    'text' => 'No se pudo eliminar la pregunta.',
+                    'icon' => 'error'
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error',
+                'text' => 'Ocurrió un error al eliminar la pregunta.',
+                'icon' => 'error'
+            ]);
+        }
     }
 
     public function render()

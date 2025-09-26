@@ -312,27 +312,129 @@
         </div>
     @endif
 
-    <!-- Contenido principal -->
+    <!-- Contenido principal - Lista de preguntas del examen -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="border-b border-gray-200 px-6 py-4">
-            <h4 class="text-lg font-medium text-gray-900">Lista de Preguntas</h4>
-            <p class="mt-1 text-sm text-gray-500">
-                Administra las preguntas asociadas a este examen.
-            </p>
-        </div>
-        <div class="px-6 py-12 text-center">
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900">Lista de Preguntas del Examen</h4>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Preguntas seleccionadas para este examen ({{ $this->examQuestions->count() }} preguntas)
+                    </p>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay preguntas</h3>
-                <p class="text-gray-500">
-                    Aún no hay preguntas registradas para este examen
-                </p>
             </div>
         </div>
+
+        @if($this->examQuestions->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                #
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Código
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Asignatura
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Capítulo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tema
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Dificultad
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Banco
+                            </th>
+                            <th scope="col" class="relative px-6 py-3">
+                                <span class="sr-only">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($this->examQuestions as $index => $examQuestion)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $examQuestion->question->code }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div>
+                                        <div class="font-medium">{{ $examQuestion->question->subject->name }}</div>
+                                        <div class="text-gray-500 text-xs">({{ $examQuestion->question->subject->code }})</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div>
+                                        <div class="font-medium">{{ $examQuestion->question->chapter->name }}</div>
+                                        <div class="text-gray-500 text-xs">({{ $examQuestion->question->chapter->code }})</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div>
+                                        <div class="font-medium">{{ $examQuestion->question->topic->name }}</div>
+                                        <div class="text-gray-500 text-xs">({{ $examQuestion->question->topic->code }})</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $difficultyColors = [
+                                            'easy' => 'bg-green-100 text-green-800',
+                                            'medium' => 'bg-yellow-100 text-yellow-800',
+                                            'hard' => 'bg-red-100 text-red-800'
+                                        ];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $difficultyColors[$examQuestion->question->difficulty] ?? 'bg-gray-100 text-gray-800' }}">
+                                        {{ $this->difficulties[$examQuestion->question->difficulty] ?? $examQuestion->question->difficulty }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div>
+                                        <div class="font-medium">{{ $examQuestion->question->bank->name }}</div>
+                                        <div class="text-xs {{ $examQuestion->question->bank->is_active ? 'text-green-600' : 'text-red-600' }}">
+                                            {{ $examQuestion->question->bank->is_active ? 'Activo' : 'Inactivo' }}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button
+                                        wire:click="confirmDeleteQuestion({{ $examQuestion->question->id }})"
+                                        class="text-red-600 hover:text-red-900 transition-colors"
+                                        title="Eliminar pregunta del examen">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay preguntas en este examen</h3>
+                    <p class="text-gray-500 mb-4">
+                        Utiliza el botón "Agregar Pregunta" para comenzar a añadir preguntas a este examen.
+                    </p>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -363,6 +465,23 @@
             text: event[0].text,
             icon: event[0].icon,
             confirmButtonText: 'OK'
+        });
+    });
+
+    $wire.on('swal:confirm', (event) => {
+        Swal.fire({
+            title: event[0].title,
+            text: event[0].text,
+            icon: event[0].icon,
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: event[0].confirmButtonText,
+            cancelButtonText: event[0].cancelButtonText
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $wire[event[0].method](event[0].params);
+            }
         });
     });
 </script>

@@ -85,4 +85,24 @@ trait ExamQuestionsTrait
     {
         return \App\Models\ExamQuestion::where('exam_id', $examId)->max('order') + 1;
     }
+
+    /**
+     * Get all questions for an exam
+     */
+    public function getExamQuestions($examId)
+    {
+        return \App\Models\ExamQuestion::where('exam_id', $examId)
+            ->with(['question.subject', 'question.chapter', 'question.topic', 'question.bank'])
+            ->get();
+    }
+
+    /**
+     * Remove a question from an exam
+     */
+    public function removeQuestionFromExam($examId, $questionId)
+    {
+        return \App\Models\ExamQuestion::where('exam_id', $examId)
+            ->where('question_id', $questionId)
+            ->delete();
+    }
 }
