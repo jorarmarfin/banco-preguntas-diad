@@ -40,7 +40,7 @@ trait ImportQuestionsTrait
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $destinationPath = "{$activeBank->folder_slug}/{$subjectSlug}";
+            $destinationPath = "banks/{$activeBank->folder_slug}/{$subjectSlug}";
 
             // Leer el archivo CSV subido por la plataforma
             $csvContent = file_get_contents($csvFile->getRealPath());
@@ -228,14 +228,14 @@ trait ImportQuestionsTrait
             }
 
             // Validar que existe la carpeta de importación
-            $importPath = "private/import/{$folderPath}";
+            $importPath = "private/import/banks/{$folderPath}";
             if (!Storage::exists($importPath)) {
                 throw new Exception("No se encontró la carpeta de importación: {$folderPath}");
             }
 
             // Generar ruta de destino
             $subjectSlug = Str::slug($subject->name);
-            $destinationPath = "private/{$activeBank->folder_slug}/{$subjectSlug}";
+            $destinationPath = "private/banks/{$activeBank->folder_slug}/{$subjectSlug}";
 
             $imported = 0;
             $errors = [];

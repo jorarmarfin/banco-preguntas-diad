@@ -105,7 +105,7 @@ trait BankTrait
     public function createBankFolder($bankName)
     {
         $folderName = Str::slug($bankName);
-        $folderPath = storage_path('app/private/' . $folderName);
+        $folderPath = storage_path('app/private/banks/' . $folderName);
 
         if (!file_exists($folderPath)) {
             mkdir($folderPath, 0755, true);
@@ -123,7 +123,7 @@ trait BankTrait
             return ['success' => false, 'message' => 'Nombre de carpeta vacío'];
         }
 
-        $folderPath = storage_path('app/private/' . $folderName);
+        $folderPath = storage_path('app/private/banks/' . $folderName);
 
         if (!file_exists($folderPath) || !is_dir($folderPath)) {
             return ['success' => true, 'message' => 'La carpeta no existe'];
@@ -185,7 +185,7 @@ trait BankTrait
             return 0;
         }
 
-        $folderPath = storage_path('app/private/' . $folderSlug);
+        $folderPath = storage_path('app/private/banks' . $folderSlug);
 
         if (!file_exists($folderPath) || !is_dir($folderPath)) {
             return 0;
