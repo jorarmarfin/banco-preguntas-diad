@@ -2,8 +2,6 @@
 
 namespace App\Livewire\Exams;
 
-use App\Models\Exam;
-use App\Models\Question;
 use App\Traits\ExamTrait;
 use App\Traits\DdlTrait;
 use App\Traits\BankTrait;
@@ -581,6 +579,113 @@ class ExamQuestionsLive extends Component
             $this->dispatch('swal:error', [
                 'title' => 'Error inesperado',
                 'text' => 'Ocurrió un error durante la exportación: ' . $e->getMessage(),
+                'icon' => 'error'
+            ]);
+        }
+    }
+
+    public function confirmCerrarSorteo()
+    {
+        // Verificar que hay preguntas en el examen
+        if ($this->examQuestions->count() === 0) {
+            $this->dispatch('swal:error', [
+                'title' => 'Sin preguntas',
+                'text' => 'No hay preguntas en el examen para cerrar el sorteo.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        $this->dispatch('swal:confirm', [
+            'title' => '¿Cerrar sorteo del examen?',
+            'text' => "Se archivarán todas las {$this->examQuestions->count()} preguntas del examen. Esta acción NO se puede deshacer.",
+            'icon' => 'warning',
+            'confirmButtonText' => 'Sí, cerrar sorteo',
+            'cancelButtonText' => 'Cancelar',
+            'method' => 'cerrarSorteo',
+            'params' => []
+        ]);
+    }
+
+    public function cerrarSorteo()
+    {
+        try {
+            // Obtener todas las preguntas del examen
+            $examQuestions = $this->examQuestions;
+
+            if ($examQuestions->count() === 0) {
+                $this->dispatch('swal:error', [
+                    'title' => 'Sin preguntas',
+                    'text' => 'No hay preguntas en el examen para cerrar el sorteo.',
+                    'icon' => 'error'
+                ]);
+                return;
+            }
+
+            $archivedCount = 0;
+            $alreadyArchivedCount = 0;
+            $errorCount = 0;
+
+            // Recorrer cada pregunta y cambiar su estado a archived
+            foreach ($examQuestions as $examQuestion) {
+                try {
+                    $question = $examQuestion->question;
+
+                    // Verificar si ya está archivada
+                    if ($question->status === \App\Enums\QuestionStatus::ARCHIVED->value) {
+                        $alreadyArchivedCount++;
+                        continue;
+                    }
+
+                    // Cambiar el estado a archived
+                    $question->update([
+                        'status' => \App\Enums\QuestionStatus::ARCHIVED->value
+                    ]);
+
+                    $archivedCount++;
+
+                } catch (\Exception $e) {
+                    $errorCount++;
+                    \Log::error("Error archivando pregunta {$examQuestion->question->code}: " . $e->getMessage());
+                }
+            }
+
+            // Construir mensaje de resultado
+            $message = "Cierre de sorteo completado:\n";
+            $message .= "• {$archivedCount} preguntas archivadas\n";
+
+            if ($alreadyArchivedCount > 0) {
+                $message .= "• {$alreadyArchivedCount} preguntas ya estaban archivadas\n";
+            }
+
+            if ($errorCount > 0) {
+                $message .= "• {$errorCount} preguntas con errores\n";
+            }
+
+            if ($archivedCount > 0) {
+                $this->dispatch('swal:success', [
+                    'title' => '¡Sorteo cerrado exitosamente!',
+                    'text' => $message,
+                    'icon' => 'success'
+                ]);
+            } else if ($alreadyArchivedCount > 0 && $errorCount === 0) {
+                $this->dispatch('swal:info', [
+                    'title' => 'Sorteo ya cerrado',
+                    'text' => 'Todas las preguntas del examen ya estaban archivadas.',
+                    'icon' => 'info'
+                ]);
+            } else {
+                $this->dispatch('swal:error', [
+                    'title' => 'Error en el cierre',
+                    'text' => 'No se pudieron archivar las preguntas. Revise los registros del sistema.',
+                    'icon' => 'error'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            $this->dispatch('swal:error', [
+                'title' => 'Error inesperado',
+                'text' => 'Ocurrió un error durante el cierre del sorteo: ' . $e->getMessage(),
                 'icon' => 'error'
             ]);
         }
