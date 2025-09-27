@@ -25,6 +25,10 @@ class SettingSeeder extends Seeder
             [
                 'key' => 'path_exams',
                 'value' => 'exams',
+            ],
+            [
+                'key' => 'path_archived',
+                'value' => 'archived',
             ]
         ]);
     }

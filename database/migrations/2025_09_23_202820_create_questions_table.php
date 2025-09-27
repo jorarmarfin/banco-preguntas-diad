@@ -31,7 +31,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['topic_id', 'code','bank_id']);
+            $table->unique(['subject_id','topic_id','chapter_id', 'code','bank_id']);
         });
     }
 

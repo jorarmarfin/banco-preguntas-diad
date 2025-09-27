@@ -35,6 +35,7 @@
                 <div class="flex-shrink-0">
                     <svg class="h-8 w-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
                 </div>
                 <div class="ml-4">
                     <div class="flex">
@@ -76,7 +77,7 @@
             </div>
 
             <div class="p-6">
-                <form wire:submit.prevent="import">
+                <form wire:submit.prevent="confirmImport">
                     <div class="grid grid-cols-1 gap-6">
 
                         <!-- Nombre de carpeta -->
@@ -214,6 +215,7 @@
                                 <div class="flex-shrink-0">
                                     <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
                                 </div>
                                 <div class="ml-3">
                                     <h3 class="text-sm font-medium text-blue-800">
@@ -267,6 +269,17 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
                             Limpiar
+                        </button>
+
+                        <button
+                            type="button"
+                            wire:click="validateImport"
+                            class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                            {{ $isImporting ? 'disabled' : '' }}>
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                            </svg>
+                            Validar
                         </button>
 
                         <button
@@ -337,5 +350,29 @@
         Swal.fire(swalConfig);
     });
 
+    // Listener para confirmaciones generadas desde Livewire (swal:confirm)
+    $wire.on('swal:confirm', (data) => {
+        const payload = Array.isArray(data) ? data[0] : data;
+        Swal.fire({
+            title: payload.title,
+            html: payload.html ?? payload.text ?? '',
+            icon: payload.icon || 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: payload.confirmButtonText || 'Sí',
+            cancelButtonText: payload.cancelButtonText || 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (Array.isArray(payload.params)) {
+                    $wire[payload.method](...payload.params);
+                } else if (payload.params !== undefined && payload.params !== null) {
+                    $wire[payload.method](payload.params);
+                } else {
+                    $wire[payload.method]();
+                }
+            }
+        });
+    });
 </script>
 @endscript

@@ -13,6 +13,7 @@ use App\Enums\QuestionDifficulty;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 trait ImportQuestionsTrait
@@ -95,13 +96,30 @@ trait ImportQuestionsTrait
                 }
 
                 // Validar que no existe pregunta duplicada en DB
-                $existingQuestion = Question::where('code', $codigo)
-                    ->where('term_id', $activeTerm->id)
-                    ->where('bank_id', $activeBank->id)
-                    ->first();
+                // Usamos la llave única compuesta: subject_id, topic_id, chapter_id, code, bank_id
+                $chapter = Chapter::where('code', $capituloCode)->where('subject_id', $subjectId)->first();
+                $topic = null;
+                if ($chapter) {
+                    $topic = Topic::where('code', $temaCode)->where('chapter_id', $chapter->id)->first();
+                }
+
+                if ($chapter && $topic) {
+                    $existingQuestion = Question::where('subject_id', $subjectId)
+                        ->where('chapter_id', $chapter->id)
+                        ->where('topic_id', $topic->id)
+                        ->where('code', $codigo)
+                        ->where('bank_id', $activeBank->id)
+                        ->first();
+                } else {
+                    // Fallback conservador: si no existen capítulo/tema aún, comprobamos por subject+code+bank
+                    $existingQuestion = Question::where('subject_id', $subjectId)
+                        ->where('code', $codigo)
+                        ->where('bank_id', $activeBank->id)
+                        ->first();
+                }
 
                 if ($existingQuestion) {
-                    $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): Ya existe una pregunta con este código";
+                    $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): Ya existe una pregunta con este código (clave única conflictiva)";
                     continue;
                 }
 
@@ -121,6 +139,8 @@ trait ImportQuestionsTrait
 
             // Si hay errores críticos, no procesar nada
             if (!empty($errors)) {
+                Log::warning('ImportQuestions: errores de validación detectados', ['folder' => $importPath, 'errors' => $errors]);
+
                 return [
                     'success' => false,
                     'imported' => 0,
@@ -173,11 +193,17 @@ trait ImportQuestionsTrait
             ];
 
         } catch (Exception $e) {
+            // Asegurar que retornamos también los errores acumulados si existen
+            $errors = isset($errors) && is_array($errors) ? $errors : [];
+            $errors[] = 'Excepción: ' . $e->getMessage();
+
+            Log::error('ImportQuestions: excepción durante la importación', ['exception' => $e->getMessage(), 'errors' => $errors, 'folder' => ($importPath ?? null)]);
+
             return [
                 'success' => false,
                 'imported' => 0,
-                'errors' => [],
-                'message' => $e->getMessage()
+                'errors' => $errors,
+                'message' => 'Error en la importación: ' . $e->getMessage()
             ];
         }
     }
@@ -305,13 +331,30 @@ trait ImportQuestionsTrait
                     }
 
                     // Validar que no existe pregunta duplicada en DB
-                    $existingQuestion = Question::where('code', $codigo)
-                        ->where('term_id', $activeTerm->id)
-                        ->where('bank_id', $activeBank->id)
-                        ->first();
+                    // Usamos la llave única compuesta: subject_id, topic_id, chapter_id, code, bank_id
+                    $chapter = Chapter::where('code', $capituloCode)->where('subject_id', $subjectId)->first();
+                    $topic = null;
+                    if ($chapter) {
+                        $topic = Topic::where('code', $temaCode)->where('chapter_id', $chapter->id)->first();
+                    }
+
+                    if ($chapter && $topic) {
+                        $existingQuestion = Question::where('subject_id', $subjectId)
+                            ->where('chapter_id', $chapter->id)
+                            ->where('topic_id', $topic->id)
+                            ->where('code', $codigo)
+                            ->where('bank_id', $activeBank->id)
+                            ->first();
+                    } else {
+                        // Fallback conservador: si no existen capítulo/tema aún, comprobamos por subject+code+bank
+                        $existingQuestion = Question::where('subject_id', $subjectId)
+                            ->where('code', $codigo)
+                            ->where('bank_id', $activeBank->id)
+                            ->first();
+                    }
 
                     if ($existingQuestion) {
-                        $errors[] = "Archivo: {$csvFile}, Fila " . ($index + 1) . " (código: {$codigo}): Ya existe una pregunta con este código";
+                        $errors[] = "Archivo: {$csvFile}, Fila " . ($index + 1) . " (código: {$codigo}): Ya existe una pregunta con este código (clave única conflictiva)";
                         continue;
                     }
 
@@ -375,11 +418,139 @@ trait ImportQuestionsTrait
             ];
 
         } catch (Exception $e) {
+            // Asegurar que retornamos también los errores acumulados si existen
+            $errors = isset($errors) && is_array($errors) ? $errors : [];
+            $errors[] = 'Excepción: ' . $e->getMessage();
+
+            Log::error('ImportQuestions (folder): excepción durante la importación', ['exception' => $e->getMessage(), 'errors' => $errors, 'folder' => ($importPath ?? $folderPath)]);
+
             return [
                 'success' => false,
                 'imported' => 0,
-                'errors' => [],
-                'message' => $e->getMessage()
+                'errors' => $errors,
+                'message' => 'Error en la importación: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Validar CSV y estructura de carpetas sin procesar (dry-run)
+     */
+    public function validateImportCsv($csvFile, $folderName, $subjectId)
+    {
+        $errors = [];
+
+        try {
+            $activeTerm = Term::where('is_active', true)->first();
+            $activeBank = Bank::where('active', true)->first();
+            $subject = Subject::find($subjectId);
+
+            if (!$activeTerm || !$activeBank || !$subject) {
+                $errors[] = 'No hay término, banco activo o asignatura válida.';
+                return [
+                    'valid' => false,
+                    'errors' => $errors,
+                    'count' => 0
+                ];
+            }
+
+            $importBasePath = \App\Models\Setting::where('key', 'path_imports')->value('value') ?? 'imports';
+            $importPath = "{$importBasePath}/{$folderName}";
+            if (!Storage::exists($importPath)) {
+                $errors[] = "No se encontró la carpeta de importación: {$importPath}";
+                return [
+                    'valid' => false,
+                    'errors' => $errors,
+                    'count' => 0
+                ];
+            }
+
+            $subjectSlug = Str::slug($subject->name);
+            $banksBasePath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
+            $destinationPath = "{$banksBasePath}/{$activeBank->folder_slug}/{$subjectSlug}";
+
+            $csvContent = file_get_contents($csvFile->getRealPath());
+            $rows = str_getcsv($csvContent, "\n");
+
+            $questionsToProcess = [];
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue; // header
+
+                $columns = str_getcsv($row);
+
+                if (count($columns) < 3) {
+                    $errors[] = "Fila " . ($index + 1) . ": Datos insuficientes";
+                    continue;
+                }
+
+                $codigo = trim($columns[0]);
+                $capituloCode = trim($columns[1]);
+                $temaCode = trim($columns[2]);
+
+                $questionImportPath = "{$importPath}/{$codigo}";
+                if (!Storage::exists($questionImportPath)) {
+                    $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): No se encontró la carpeta de archivos en {$questionImportPath}";
+                    continue;
+                }
+
+                $questionFiles = Storage::allFiles($questionImportPath);
+                if (empty($questionFiles)) {
+                    $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): La carpeta está vacía, no contiene archivos";
+                    continue;
+                }
+
+                $questionDestinationPath = "{$destinationPath}/{$codigo}";
+                if (Storage::exists($questionDestinationPath)) {
+                    $existingFiles = Storage::files($questionDestinationPath);
+                    if (!empty($existingFiles)) {
+                        $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): Ya existen archivos en el destino";
+                        continue;
+                    }
+                }
+
+                $chapter = Chapter::where('code', $capituloCode)->where('subject_id', $subjectId)->first();
+                $topic = null;
+                if ($chapter) {
+                    $topic = Topic::where('code', $temaCode)->where('chapter_id', $chapter->id)->first();
+                }
+
+                if ($chapter && $topic) {
+                    $existingQuestion = Question::where('subject_id', $subjectId)
+                        ->where('chapter_id', $chapter->id)
+                        ->where('topic_id', $topic->id)
+                        ->where('code', $codigo)
+                        ->where('bank_id', $activeBank->id)
+                        ->first();
+                } else {
+                    // Fallback conservador: si no existen capítulo/tema aún, comprobamos por subject+code+bank
+                    $existingQuestion = Question::where('subject_id', $subjectId)
+                        ->where('code', $codigo)
+                        ->where('bank_id', $activeBank->id)
+                        ->first();
+                }
+
+                if ($existingQuestion) {
+                    $errors[] = "Fila " . ($index + 1) . " (código: {$codigo}): Ya existe una pregunta con este código (clave única conflictiva)";
+                    continue;
+                }
+
+                $questionsToProcess[] = $codigo;
+            }
+
+            return [
+                'valid' => empty($errors),
+                'errors' => $errors,
+                'count' => count($questionsToProcess)
+            ];
+
+        } catch (Exception $e) {
+            Log::error('validateImportCsv excepción', ['exception' => $e->getMessage()]);
+            $errors[] = 'Excepción: ' . $e->getMessage();
+            return [
+                'valid' => false,
+                'errors' => $errors,
+                'count' => 0
             ];
         }
     }
@@ -437,14 +608,23 @@ trait ImportQuestionsTrait
      */
     private function createQuestion($data)
     {
-        // Verificar que no existe una pregunta con el mismo código en el mismo término y banco
-        $existingQuestion = Question::where('code', $data['code'])
-            ->where('term_id', $data['term_id'])
-            ->where('bank_id', $data['bank_id'])
-            ->first();
+        // Verificar que no existe una pregunta con la misma clave compuesta
+        $query = Question::where('subject_id', $data['subject_id'])
+            ->where('code', $data['code'])
+            ->where('bank_id', $data['bank_id']);
+
+        // chapter_id and topic_id may be present in $data
+        if (isset($data['chapter_id'])) {
+            $query->where('chapter_id', $data['chapter_id']);
+        }
+        if (isset($data['topic_id'])) {
+            $query->where('topic_id', $data['topic_id']);
+        }
+
+        $existingQuestion = $query->first();
 
         if ($existingQuestion) {
-            throw new Exception("Ya existe una pregunta con el código {$data['code']}");
+            throw new Exception("Ya existe una pregunta que respeta la clave única compuesta (subject, chapter, topic, code, bank)");
         }
 
         return Question::create($data);
