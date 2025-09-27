@@ -614,7 +614,7 @@ class ExamQuestionsLive extends Component
             }
         }
 
-        $detailedHtml = "<p>Al confirmar, se cambiará el estado de las <strong>{$count}</strong> preguntas asociadas a este examen a <strong>archived</strong> (archivadas) en la base de datos.</p>";
+        $detailedHtml = "<p>Al confirmar, se cambiará el estado de las <strong>{$count}</strong> preguntas asociadas a este examen a <strong>Sorteadas</strong> en la base de datos.</p>";
         $detailedHtml .= "<p>Esto <strong>NO</strong> eliminará copias físicas ya exportadas ni las carpetas en disco; sólo marcará las preguntas como archivadas en el sistema.</p>";
         $detailedHtml .= "<p>Acción irreversible desde la interfaz: si necesita recuperar preguntas, deberá revertir manualmente el estado en la base de datos. Asegúrese de haber exportado y respaldado correctamente las preguntas antes de continuar.</p>";
 
@@ -663,14 +663,14 @@ class ExamQuestionsLive extends Component
                     $question = $examQuestion->question;
 
                     // Verificar si ya está archivada
-                    if ($question->status === \App\Enums\QuestionStatus::ARCHIVED->value) {
+                    if ($question->status === \App\Enums\QuestionStatus::DRAWN->value) {
                         $alreadyArchivedCount++;
                         continue;
                     }
 
-                    // Cambiar el estado a archived
+                    // Cambiar el estado a sorteada (drawn)
                     $question->update([
-                        'status' => \App\Enums\QuestionStatus::ARCHIVED->value
+                        'status' => \App\Enums\QuestionStatus::DRAWN->value
                     ]);
 
                     $archivedCount++;
@@ -683,7 +683,7 @@ class ExamQuestionsLive extends Component
 
             // Construir mensaje de resultado
             $message = "Cierre de sorteo completado:\n";
-            $message .= "• {$archivedCount} preguntas archivadas\n";
+            $message .= "• {$archivedCount} preguntas sorteadas\n";
 
             if ($alreadyArchivedCount > 0) {
                 $message .= "• {$alreadyArchivedCount} preguntas ya estaban archivadas\n";

@@ -106,4 +106,8 @@ trait DdlTrait
                 return [$topic->id => $topic->name];
             });
     }
+    public function DdlBanks()
+    {
+        return \App\Models\Bank::orderBy('name')->get();
+    }
 }

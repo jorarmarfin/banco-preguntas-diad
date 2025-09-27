@@ -27,9 +27,25 @@
                     </svg>
                     Limpiar Filtros
                 </button>
+                <button
+                    wire:click="confirmArchive"
+                    class="inline-flex items-center px-4 py-2 border border-red-300 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    @if(!$selectedBank) disabled @endif
+                    title="{{ !$selectedBank ? 'Seleccione un banco primero' : 'Archivar archivos físicos de las preguntas sorteadas' }}">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 8.511a9 9 0 10-16.5 0A8.966 8.966 0 0012 21a8.966 8.966 0 008.25-12.489zM12 7v6l4 2"></path>
+                    </svg>
+                    Archivar
+                </button>
             </div>
         </div>
     </div>
+    {{-- Mensaje instructivo visible --}}
+    @if(!$selectedBank)
+        <div class="mt-3 text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            Seleccione en el filtro el banco que desea archivar y presione <strong>Archivar</strong>.
+        </div>
+    @endif
 
     <!-- Filtros -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -324,3 +340,70 @@
         @endif
     </div>
 </div>
+
+@script
+<script>
+    $wire.on('show-alert', (data) => {
+        const alertData = Array.isArray(data) ? data[0] : data;
+
+        let swalConfig = {
+            title: alertData.title,
+            text: alertData.message,
+            icon: alertData.type,
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3b82f6'
+        };
+
+        if (alertData.details) {
+            swalConfig.html = `
+                <div class="text-left">
+                    <p class="mb-3">${alertData.message}</p>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                        <strong>Detalles de errores:</strong><br>
+                        ${alertData.details}
+                    </div>
+                </div>
+            `;
+            delete swalConfig.text;
+        }
+
+        switch(alertData.type) {
+            case 'success':
+                swalConfig.confirmButtonColor = '#10b981';
+                break;
+            case 'error':
+                swalConfig.confirmButtonColor = '#ef4444';
+                break;
+            case 'warning':
+                swalConfig.confirmButtonColor = '#f59e0b';
+                break;
+        }
+
+        Swal.fire(swalConfig);
+    });
+
+    $wire.on('swal:confirm', (data) => {
+        const payload = Array.isArray(data) ? data[0] : data;
+        Swal.fire({
+            title: payload.title,
+            html: payload.html ?? payload.text ?? '',
+            icon: payload.icon || 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: payload.confirmButtonText || 'Sí',
+            cancelButtonText: payload.cancelButtonText || 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (Array.isArray(payload.params)) {
+                    $wire[payload.method](...payload.params);
+                } else if (payload.params !== undefined && payload.params !== null) {
+                    $wire[payload.method](payload.params);
+                } else {
+                    $wire[payload.method]();
+                }
+            }
+        });
+    });
+</script>
+@endscript

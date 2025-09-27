@@ -6,6 +6,8 @@ enum QuestionStatus: string
 {
     case DRAFT = 'draft';
     case APPROVED = 'approved';
+
+    case DRAWN = 'drawn';
     case ARCHIVED = 'archived';
 
     public function label(): string
@@ -13,6 +15,7 @@ enum QuestionStatus: string
         return match($this) {
             self::DRAFT => 'Borrador',
             self::APPROVED => 'Aprobada',
+            self::DRAWN => 'Sorteada',
             self::ARCHIVED => 'Archivada',
         };
     }
@@ -22,6 +25,7 @@ enum QuestionStatus: string
         return match($this) {
             self::DRAFT => 'bg-gray-100 text-gray-800',
             self::APPROVED => 'bg-green-100 text-green-800',
+            self::DRAWN => 'bg-blue-100 text-blue-800',
             self::ARCHIVED => 'bg-red-100 text-red-800',
         };
     }
