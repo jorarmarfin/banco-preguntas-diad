@@ -99,12 +99,12 @@
             @can('menu question proposals')
                 <flux:navlist.group heading="Elaboración Banco" expandable>
                     <flux:navlist.item
-                        icon="tag"
-                        :href="route('subject.categories.index')"
-                        :current="request()->routeIs('subject.categories.index')"
+                        icon="building-library"
+                        :href="route('professors.index')"
+                        :current="request()->routeIs('professors.index')"
                         wire:navigate
                     >
-                        Categorías
+                        Docentes
                     </flux:navlist.item>
 
                 </flux:navlist.group>
