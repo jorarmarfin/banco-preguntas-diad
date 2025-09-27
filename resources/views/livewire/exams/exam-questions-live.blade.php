@@ -621,11 +621,16 @@
                         </button>
                         <button
                             wire:click="confirmCerrarSorteo"
-                            class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            @if(!$this->questionsExported) disabled @endif
+                            class="inline-flex items-center px-4 py-2 @if($this->questionsExported) bg-red-600 hover:bg-red-700 text-white @else bg-gray-400 text-gray-600 cursor-not-allowed @endif text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none @if($this->questionsExported) focus:ring-2 focus:ring-red-500 focus:ring-offset-2 @endif"
+                            @if(!$this->questionsExported) title="Primero debe exportar las preguntas del examen" @endif>
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                             </svg>
                             Cerrar Sorteo ({{ $this->examQuestions->count() }})
+                            @if(!$this->questionsExported)
+                                <span class="ml-2 text-xs opacity-75">- Exportar primero</span>
+                            @endif
                         </button>
                     </div>
                 @endif

@@ -133,6 +133,11 @@ class ExamQuestionsLive extends Component
         return $this->getExamQuestions($this->examId);
     }
 
+    public function getQuestionsExportedProperty()
+    {
+        return $this->areQuestionsExported($this->examId);
+    }
+
     public function getAvailableGroupQuestionsCountProperty()
     {
         if ($this->selectionMode !== 'group' || !$this->selectedSubjectId || empty($this->groupChapters)) {
@@ -597,9 +602,26 @@ class ExamQuestionsLive extends Component
             return;
         }
 
+        $count = $this->examQuestions->count();
+
+        // Obtener información de exportación para mostrar ruta si existe
+        $exportInfo = $this->getExportInfo($this->examId);
+        $exportPathText = '';
+        if ($exportInfo && isset($exportInfo['exists']) && $exportInfo['exists']) {
+            $exportPath = $exportInfo['export_path'] ?? null;
+            if ($exportPath) {
+                $exportPathText = "\n\nRuta de exportación detectada: {$exportPath}";
+            }
+        }
+
+        $detailedText = "Al confirmar, se cambiará el estado de las {$count} preguntas asociadas a este examen a 'archived' (archivadas) en la base de datos.\n\n"
+            . "Esto NO eliminará copias físicas ya exportadas ni las carpetas en disco; sólo marcará las preguntas como archivadas en el sistema.\n\n"
+            . "Acción irreversible desde la interfaz: si necesita recuperar preguntas, deberá revertir manualmente el estado en la base de datos. Asegúrese de haber exportado y respaldado correctamente las preguntas antes de continuar."
+            . $exportPathText;
+
         $this->dispatch('swal:confirm', [
             'title' => '¿Cerrar sorteo del examen?',
-            'text' => "Se archivarán todas las {$this->examQuestions->count()} preguntas del examen. Esta acción NO se puede deshacer.",
+            'text' => $detailedText,
             'icon' => 'warning',
             'confirmButtonText' => 'Sí, cerrar sorteo',
             'cancelButtonText' => 'Cancelar',
@@ -690,6 +712,11 @@ class ExamQuestionsLive extends Component
                 'icon' => 'error'
             ]);
         }
+    }
+
+    public function getExportInfoProperty()
+    {
+        return $this->getExportInfo($this->examId);
     }
 
     public function render()

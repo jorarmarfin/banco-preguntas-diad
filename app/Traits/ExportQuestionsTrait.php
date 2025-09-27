@@ -204,4 +204,66 @@ trait ExportQuestionsTrait
             return null;
         }
     }
+
+    /**
+     * Verificar si las preguntas del examen han sido exportadas
+     */
+    public function areQuestionsExported($examId)
+    {
+        try {
+            $exam = $this->findExam($examId);
+            if (!$exam) {
+                return false;
+            }
+
+            $activeTerm = $this->getActiveTerm();
+            if (!$activeTerm) {
+                return false;
+            }
+
+            // Si el examen no tiene preguntas, consideramos que no está exportado
+            $examQuestions = $exam->questions()->with('question')->get();
+            if ($examQuestions->isEmpty()) {
+                return false;
+            }
+
+            $basePath = \App\Models\Setting::where('key', 'path_exams')->value('value') ?? 'private/exams';
+            $examPath = $basePath . '/' . $activeTerm->code . '/' . $exam->code;
+
+            // Verificar si existe el directorio del examen
+            if (!Storage::exists($examPath)) {
+                return false;
+            }
+
+            // Verificar que al menos una pregunta del examen esté exportada
+            $questionsBySubject = $examQuestions->groupBy('question.subject.code');
+            $exportedCount = 0;
+
+            foreach ($questionsBySubject as $subjectCode => $examQuestionsGroup) {
+                $subjectName = Str::of($examQuestionsGroup->first()->question->subject->name)->slug('-');
+                $subjectPath = $examPath . '/' . $subjectName;
+
+                if (!Storage::exists($subjectPath)) {
+                    continue;
+                }
+
+                foreach ($examQuestionsGroup as $examQuestion) {
+                    $questionPath = $subjectPath . '/' . $examQuestion->question->code;
+                    if (Storage::exists($questionPath)) {
+                        $exportedCount++;
+                    }
+                }
+            }
+
+            // Si al menos el 90% de las preguntas están exportadas, consideramos que está exportado
+            $totalQuestions = $examQuestions->count();
+            $minimumExported = ceil($totalQuestions * 0.9);
+
+            return $exportedCount >= $minimumExported;
+
+        } catch (\Exception $e) {
+            Log::error('Error verificando exportación de preguntas: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
