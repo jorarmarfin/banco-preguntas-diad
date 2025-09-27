@@ -21,6 +21,7 @@ class ImportQuestionsLive extends Component
     // Control de estado
     public $isImporting = false;
     public $hasActiveBank = false;
+    public $isValidated = false; // Indica si el dry-run pasó y se puede importar
 
     public function mount()
     {
@@ -28,8 +29,34 @@ class ImportQuestionsLive extends Component
         $this->hasActiveBank = $this->getActiveBank() !== null;
     }
 
+    // Invalidar validación cuando cambien inputs relevantes
+    public function updatedFolderName()
+    {
+        $this->isValidated = false;
+    }
+
+    public function updatedSelectedSubject()
+    {
+        $this->isValidated = false;
+    }
+
+    public function updatedCsvFile()
+    {
+        $this->isValidated = false;
+    }
+
     public function import()
     {
+        // seguridad: no permitir importar si no se validó primero
+        if (!$this->isValidated) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'title' => 'Validación requerida',
+                'message' => 'Debe ejecutar la validación antes de importar.'
+            ]);
+            return;
+        }
+
         // Validar que hay un banco activo antes de proceder
         if (!$this->hasActiveBank) {
             $this->dispatch('show-alert', [
@@ -140,7 +167,9 @@ class ImportQuestionsLive extends Component
                     'title' => 'Validación correcta',
                     'message' => "La validación pasó. Se detectaron {$result['count']} preguntas listas para importar."
                 ]);
+                $this->isValidated = true;
             } else {
+                $this->isValidated = false;
                 $errors = $result['errors'] ?? [];
                 $countErrors = count($errors);
                 $details = implode('<br>', array_slice($errors, 0, 50));
@@ -174,6 +203,7 @@ class ImportQuestionsLive extends Component
         $this->selectedStatus = 'draft';
         $this->csvFile = null;
         $this->isImporting = false;
+        $this->isValidated = false;
     }
 
     public function confirmImport()
@@ -185,9 +215,17 @@ class ImportQuestionsLive extends Component
             'csvFile' => 'required|file|mimes:csv,txt|max:10240',
         ]);
 
+        if (!$this->isValidated) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'title' => 'Validación requerida',
+                'message' => 'Debe validar el archivo y la carpeta antes de confirmar la importación.'
+            ]);
+            return;
+        }
+
         // Obtener datos para mostrar en el modal
-        $subject = \App\Models\Subject::find($this->selectedSubject);
-        $subjectName = $subject ? $subject->name : 'Asignatura no encontrada';
+        $subjectName = $this->getSubjectNameById($this->selectedSubject) ?? 'Asignatura no encontrada';
         $fileName = $this->csvFile ? $this->csvFile->getClientOriginalName() : 'Sin archivo seleccionado';
 
         $html = "<p>Va a importar el archivo <strong>{$fileName}</strong></p>";

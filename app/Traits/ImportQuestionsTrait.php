@@ -670,4 +670,18 @@ trait ImportQuestionsTrait
 
         return "public/{$term->code}/{$subjectSlug}/p{$questionCode}";
     }
+
+    /**
+     * Obtener el nombre de la asignatura por id (helper para componentes)
+     */
+    public function getSubjectNameById($subjectId)
+    {
+        try {
+            $subject = \App\Models\Subject::find($subjectId);
+            return $subject ? $subject->name : null;
+        } catch (Exception $e) {
+            Log::error('getSubjectNameById error', ['subjectId' => $subjectId, 'exception' => $e->getMessage()]);
+            return null;
+        }
+    }
 }

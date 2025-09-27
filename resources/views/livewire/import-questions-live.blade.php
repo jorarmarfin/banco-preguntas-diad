@@ -259,12 +259,25 @@
                     </div>
 
                     <!-- Botones -->
-                    <div class="mt-8 flex justify-end space-x-3">
+                    <div class="mt-8 flex justify-end space-x-3 items-center">
+                        {{-- Indicador de estado de validación --}}
+                        <div class="flex items-center mr-4">
+                            @if($isValidated)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                                    Validado
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                    No validado
+                                </span>
+                            @endif
+                        </div>
+
                         <button
                             type="button"
                             wire:click="resetForm"
                             class="inline-flex items-center px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                            {{ $isImporting ? 'disabled' : '' }}>
+                            {{ ($isImporting) ? 'disabled' : '' }}>
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
@@ -284,8 +297,9 @@
 
                         <button
                             type="submit"
-                            class="inline-flex items-center px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            {{ $isImporting ? 'disabled' : '' }}>
+                            class="inline-flex items-center px-6 py-2 text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed @if(!$isValidated) bg-gray-400 text-gray-600 cursor-not-allowed @else bg-green-600 hover:bg-green-700 text-white @endif"
+                            {{ ($isImporting || !$isValidated) ? 'disabled' : '' }}
+                            @if(!$isValidated) title="Ejecute 'Validar' antes de importar" @endif>
 
                             @if($isImporting)
                                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
