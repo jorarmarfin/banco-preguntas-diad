@@ -724,7 +724,6 @@
                                         title="Eliminar pregunta del examen">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
                                     </button>
                                 </td>
                             </tr>
@@ -781,18 +780,26 @@
     });
 
     $wire.on('swal:confirm', (event) => {
+        const payload = event[0];
         Swal.fire({
-            title: event[0].title,
-            text: event[0].text,
-            icon: event[0].icon,
+            title: payload.title,
+            html: payload.html ?? payload.text ?? '',
+            icon: payload.icon,
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: event[0].confirmButtonText,
-            cancelButtonText: event[0].cancelButtonText
+            confirmButtonText: payload.confirmButtonText,
+            cancelButtonText: payload.cancelButtonText
         }).then((result) => {
             if (result.isConfirmed) {
-                $wire[event[0].method](event[0].params);
+                // Llamada a método Livewire; si params es arreglo o valor lo pasamos directamente
+                if (Array.isArray(payload.params)) {
+                    $wire[payload.method](...payload.params);
+                } else if (payload.params !== undefined && payload.params !== null) {
+                    $wire[payload.method](payload.params);
+                } else {
+                    $wire[payload.method]();
+                }
             }
         });
     });

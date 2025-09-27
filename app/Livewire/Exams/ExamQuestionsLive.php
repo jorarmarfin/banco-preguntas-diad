@@ -614,20 +614,28 @@ class ExamQuestionsLive extends Component
             }
         }
 
-        $detailedText = "Al confirmar, se cambiará el estado de las {$count} preguntas asociadas a este examen a 'archived' (archivadas) en la base de datos.\n\n"
-            . "Esto NO eliminará copias físicas ya exportadas ni las carpetas en disco; sólo marcará las preguntas como archivadas en el sistema.\n\n"
-            . "Acción irreversible desde la interfaz: si necesita recuperar preguntas, deberá revertir manualmente el estado en la base de datos. Asegúrese de haber exportado y respaldado correctamente las preguntas antes de continuar."
-            . $exportPathText;
+        $detailedHtml = "<p>Al confirmar, se cambiará el estado de las <strong>{$count}</strong> preguntas asociadas a este examen a <strong>archived</strong> (archivadas) en la base de datos.</p>";
+        $detailedHtml .= "<p>Esto <strong>NO</strong> eliminará copias físicas ya exportadas ni las carpetas en disco; sólo marcará las preguntas como archivadas en el sistema.</p>";
+        $detailedHtml .= "<p>Acción irreversible desde la interfaz: si necesita recuperar preguntas, deberá revertir manualmente el estado en la base de datos. Asegúrese de haber exportado y respaldado correctamente las preguntas antes de continuar.</p>";
+
+        if ($exportInfo && isset($exportInfo['exists']) && $exportInfo['exists']) {
+            $exportPath = $exportInfo['export_path'] ?? null;
+            if ($exportPath) {
+                $detailedHtml .= "<p>Ruta de exportación detectada: <code>{$exportPath}</code></p>";
+            }
+        }
 
         $this->dispatch('swal:confirm', [
             'title' => '¿Cerrar sorteo del examen?',
-            'text' => $detailedText,
+            'html' => $detailedHtml,
             'icon' => 'warning',
             'confirmButtonText' => 'Sí, cerrar sorteo',
             'cancelButtonText' => 'Cancelar',
             'method' => 'cerrarSorteo',
             'params' => []
         ]);
+
+        return;
     }
 
     public function cerrarSorteo()
