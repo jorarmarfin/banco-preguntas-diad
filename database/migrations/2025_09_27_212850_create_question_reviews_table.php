@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('question_reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('question_id')->constrained()->onDelete('cascade');
-            $table->foreignId('professor_id')->constrained()->nullOnDelete();
+            $table->foreignId('professor_id')->nullable()->constrained()->nullOnDelete();
             $table->text('comments')->nullable();
             $table->date('reviewed_at')->nullable();
 
