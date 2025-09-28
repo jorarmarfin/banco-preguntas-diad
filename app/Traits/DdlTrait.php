@@ -110,4 +110,17 @@ trait DdlTrait
     {
         return \App\Models\Bank::orderBy('name')->get();
     }
+
+    /**
+     * Get all professors for dropdown
+     */
+    public function DdlProfessors()
+    {
+        return \App\Models\Professors::where('active', true)
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(function ($professor) {
+                return [$professor->id => $professor->name . ' (' . $professor->code . ')'];
+            });
+    }
 }

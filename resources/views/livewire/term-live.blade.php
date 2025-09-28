@@ -116,22 +116,22 @@
         <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-700">
             <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-16">
+                <th>
                     #
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th >
                     Código
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th >
                     Nombre
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th >
                     Estado
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th >
                     Preguntas
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-32">
+                <th>
                     Acciones
                 </th>
             </tr>

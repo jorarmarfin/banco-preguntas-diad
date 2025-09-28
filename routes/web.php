@@ -23,3 +23,4 @@ require __DIR__.'/auth.php';
 require __DIR__.'/setting.php';
 require __DIR__.'/subjects.php';
 require __DIR__.'/draws.php';
+require __DIR__.'/elaboration.php';

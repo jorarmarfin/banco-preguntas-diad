@@ -106,6 +106,14 @@
                     >
                         Docentes
                     </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="archive-box"
+                        :href="route('proposed.index')"
+                        :current="request()->routeIs('proposed.index')"
+                        wire:navigate
+                    >
+                        Propuestas
+                    </flux:navlist.item>
 
                 </flux:navlist.group>
             @endcan

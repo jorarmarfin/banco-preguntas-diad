@@ -148,28 +148,28 @@
         <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-700">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     #
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Código
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Nombre
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Email
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Teléfono
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Estado
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Fecha Creación
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th>
                     Acciones
                 </th>
             </tr>
