@@ -1,4 +1,20 @@
-<div class="px-4 py-5 sm:p-6">
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <flux:icon.cog-8-tooth />
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Configuración</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Administra las configuraciones generales de la aplicación
+                </p>
+            </div>
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-medium text-gray-900"></h3>
         <button wire:click="showCreateForm"

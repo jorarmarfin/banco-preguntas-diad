@@ -1,4 +1,20 @@
-<div class="px-4 py-5 sm:p-6">
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <flux:icon.arrow-path-rounded-square />
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Gestión de periodos</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Administra los periodos académicos de la institución
+                </p>
+            </div>
+        </div>
+    </div>
     <div class="flex justify-end items-center mb-6">
         <button wire:click="showCreateForm" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
