@@ -4,9 +4,7 @@ namespace App\Livewire\Banks;
 
 use App\Traits\BankTrait;
 use App\Traits\DdlTrait;
-use Livewire\Component;
-
-class QuestionProposedLive extends Component
+use Livewire\Compone
 {
     use BankTrait, DdlTrait;
 
