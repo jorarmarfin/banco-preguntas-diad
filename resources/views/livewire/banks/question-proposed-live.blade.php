@@ -186,3 +186,48 @@
         </div>
     @endif
 </div>
+
+@script
+<script>
+    $wire.on('show-alert', (data) => {
+        const alertData = Array.isArray(data) ? data[0] : data;
+
+        let swalConfig = {
+            title: alertData.title,
+            text: alertData.message,
+            icon: alertData.type,
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3b82f6'
+        };
+
+        // Si hay detalles (para errores múltiples), usar HTML
+        if (alertData.details) {
+            swalConfig.html = `
+                <div class="text-left">
+                    <p class="mb-3">${alertData.message}</p>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                        <strong>Detalles:</strong><br>
+                        ${alertData.details}
+                    </div>
+                </div>
+            `;
+            delete swalConfig.text;
+        }
+
+        // Ajustar colores según el tipo
+        switch(alertData.type) {
+            case 'success':
+                swalConfig.confirmButtonColor = '#10b981';
+                break;
+            case 'error':
+                swalConfig.confirmButtonColor = '#ef4444';
+                break;
+            case 'warning':
+                swalConfig.confirmButtonColor = '#f59e0b';
+                break;
+        }
+
+        Swal.fire(swalConfig);
+    });
+</script>
+@endscript
