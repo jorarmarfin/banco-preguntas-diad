@@ -53,6 +53,9 @@
             </div>
         </div>
 
+        <!-- Distribución de preguntas por asignatura (solo diseño) -->
+        <livewire:statistics.distribution-by-subject-live />
+        
         <!-- Gráficas (placeholders) -->
         <div class="grid gap-4 lg:grid-cols-3">
             <div class="relative h-64 overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
@@ -83,11 +86,11 @@
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Acciones rápidas</h3>
                 <div class="flex flex-wrap gap-2">
-                    <a href="#" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Crear pregunta</a>
-                    <a href="#" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Importar preguntas</a>
-                    <a href="#" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Bancos</a>
-                    <a href="#" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Asignaturas</a>
-                    <a href="#" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Exámenes</a>
+                    <a href="{{ route('questions.index') }}" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Crear pregunta</a>
+                    <a href="{{ route('import.questions.index') }}" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Importar preguntas</a>
+                    <a href="{{ route('banks.index') }}" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Bancos</a>
+                    <a href="{{ route('subject.index') }}" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Asignaturas</a>
+                    <a href="{{ route('exams.index') }}" class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">Exámenes</a>
                 </div>
             </div>
         </div>

@@ -71,6 +71,46 @@ trait StatisticsTrait
             ->pluck('total', 'difficulty')
             ->all() + ['easy' => 0, 'normal' => 0, 'hard' => 0];
     }
+
+    // --- Subject-scoped statistics ---
+    public function countTotalForSubject(int $subjectId, ?int $bankId = null): int
+    {
+        $bankId = $bankId ?? $this->getActiveBankId();
+        if (!$bankId) {
+            return 0;
+        }
+        return Question::where('bank_id', $bankId)
+            ->where('subject_id', $subjectId)
+            ->count();
+    }
+
+    public function countApprovedForSubject(int $subjectId, ?int $bankId = null): int
+    {
+        $bankId = $bankId ?? $this->getActiveBankId();
+        if (!$bankId) {
+            return 0;
+        }
+        return Question::where('bank_id', $bankId)
+            ->where('subject_id', $subjectId)
+            ->where('status', QuestionStatus::APPROVED->value)
+            ->count();
+    }
+
+    public function countsByDifficultyForSubject(int $subjectId, ?int $bankId = null): array
+    {
+        $bankId = $bankId ?? $this->getActiveBankId();
+        if (!$bankId) {
+            return ['easy' => 0, 'normal' => 0, 'hard' => 0];
+        }
+        $result = Question::where('bank_id', $bankId)
+            ->where('subject_id', $subjectId)
+            ->selectRaw('difficulty, COUNT(*) as total')
+            ->groupBy('difficulty')
+            ->pluck('total', 'difficulty')
+            ->all();
+
+        return array_merge(['easy' => 0, 'normal' => 0, 'hard' => 0], $result);
+    }
 }
 
 
