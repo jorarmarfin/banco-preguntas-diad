@@ -59,7 +59,7 @@ trait QuestionsTrait
 
         $questions = Question::with(['bank', 'subject'])
             ->where('bank_id', $bank->id)
-            ->where('status', QuestionStatus::ARCHIVED->value)
+            ->where('status', QuestionStatus::DRAWN->value)
             ->get();
 
         $moved = 0;
