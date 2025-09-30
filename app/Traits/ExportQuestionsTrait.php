@@ -70,26 +70,31 @@ trait ExportQuestionsTrait
                     'path' => $subjectPath,
                     'count' => $examQuestions->count()
                 ];
-
                 // Crear directorio de asignatura si no existe
                 if (!Storage::exists($subjectPath)) {
                     Storage::makeDirectory($subjectPath);
                 }
 
-                foreach ($examQuestions as $examQuestion) {
-                    $question = $examQuestion->question;
+				foreach ($examQuestions as $examQuestion) {
+					$question = $examQuestion->question;
 
-                    // Construir la ruta de origen basada en el path de la pregunta usando Storage
-                    $sourcePath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
-                    // Verificar si la carpeta de origen existe
-                    if (!Storage::exists($sourcePath) || !Storage::directoryExists($sourcePath)) {
-                        Log::warning("Carpeta de pregunta no encontrada: {$sourcePath}");
-                        $errorCount++;
-                        continue;
-                    }
+					// Determinar carpeta exacta de la pregunta en los bancos
+					$sourcePath = $question->path;
+					if (!$sourcePath) {
+						$banksBasePath = \App\Models\Setting::where('key', 'path_banks')->value('value') ?? 'private/banks';
+						$bankSlug = $question->bank?->folder_slug ?? (string) \Illuminate\Support\Str::slug($question->bank?->name ?? ('bank-' . $question->bank_id));
+						$subjectSlug = (string) \Illuminate\Support\Str::of($question->subject?->name ?? ('subject-' . $question->subject_id))->slug('-');
+						$sourcePath = trim("{$banksBasePath}/{$bankSlug}/{$subjectSlug}/{$question->code}", '/');
+					}
+					// Verificar si la carpeta de origen existe
+					if (!Storage::directoryExists($sourcePath)) {
+						Log::warning("Carpeta de pregunta no encontrada: {$sourcePath}");
+						$errorCount++;
+						continue;
+					}
 
-                    // Construir la ruta de destino
-                    $destinationPath = $subjectPath . '/' . $question->code;
+					// Construir la ruta de destino
+					$destinationPath = $subjectPath . '/' . $question->code;
 
                     // Verificar si ya existe en destino
                     if (Storage::exists($destinationPath)) {
